@@ -1,0 +1,115 @@
+/*
+ * ====================================================================
+ * DCL SNIPPET: Access Control for CDS Views
+ * FILE TYPE:  .asr (not .txt) — DCL is a separate repository object
+ * PURPOSE :  Restrict row-level access based on user authorization
+ * TOPIC   :  Data Control Language — @AccessControl.authorizationCheck
+ * ====================================================================
+ *
+ * WHAT IS DCL?
+ *   DCL (Data Control Language) is a CDS artifact (.asr file) that
+ *   defines row-level security for CDS views. It works with PFCG
+ *   authorization objects to filter data per user.
+ *
+ * KEY CONCEPTS:
+ *   1. DCL is a SEPARATE artifact from the CDS view — file extension .asr
+ *   2. The CDS view must have @AccessControl.authorizationCheck: #CHECK
+ *   3. DCL uses ASPECT = PVZM to define mapping between fields and auth objects
+ *   4. Implicit access control is based on PFCG authorization object fields
+ *   5. DCL can restrict: SELECT, INSERT, UPDATE, DELETE (per operation)
+ *
+ * DCL SYNTAX OVERVIEW:
+ *
+ *   @EndUserText.label: 'Access control for ZPRAC_CDS_SIMPLE'
+ *   @MappingRole: true
+ *   define role ZPRAC_CDS_SIMPLE_AC {
+ *     grant select on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '03', AGENCY = $sy_user_agr() );
+ *   }
+ *
+ * COMMON DCL PATTERNS:
+ *   ┌──────────────────────────────────┬────────────────────────────────┐
+ *   │ Pattern                          │ When to use                    │
+ *   ├──────────────────────────────────┼────────────────────────────────┤
+ *   │ grant select ... where ...       │ Standard row-level restriction │
+ *   │ grant all on ...                 │ Full access (admin purpose)    │
+ *   │ inherit access for ...           │ Delegate to underlying view    │
+ *   │ aspect pfcg_auth(...)            │ Map CDS field to PFCG auth obj │
+ *   │ $sy_user_agr()                   │ User's authorization values    │
+ *   └──────────────────────────────────┴────────────────────────────────┘
+ *
+ * ADVANCED DCL — INHERIT ACCESS:
+ *   Delegate access control to an underlying view. The current view
+ *   inherits the DCL restrictions from its data source automatically.
+ *
+ *   @EndUserText.label: 'DCL for ZPRAC_CDS_VIEW_ON_VIEW (inherits)'
+ *   @MappingRole: true
+ *   define role ZPRAC_CDS_VON_V_AC {
+ *     grant select on ZPRAC_CDS_VIEW_ON_VIEW {
+ *       grant inherited access for select on ZPRAC_CDS_SIMPLE;
+ *     }
+ *   }
+ *
+ * ADVANCED DCL — DEFINE ASPECT:
+ *   Create reusable authorization conditions for multiple roles.
+ *
+ *   @EndUserText.label: 'Aspect for Agency authorization'
+ *   define aspect ZPRAC_ASPECT_AGENCY {
+ *     pfcg_auth( /DMO/TRV, ACTVT = '03', AGENCY = $sy_user_agr() )
+ *   }
+ *
+ *   define role ZPRAC_CDS_SIMPLE_AC {
+ *     grant select on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect ZPRAC_ASPECT_AGENCY;
+ *   }
+ *
+ * ADVANCED DCL — CONDITIONAL GRANTS:
+ *   Grant different access levels based on user authorization values.
+ *
+ *   define role ZPRAC_CDS_TRAVEL_AC {
+ *     grant select on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '03', AGENCY = $sy_user_agr() );
+ *
+ *     grant insert, update, delete on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '01,02', AGENCY = $sy_user_agr() );
+ *   }
+ *
+ * ADVANCED DCL — INSTANCE-BASED ACCESS:
+ *   Restrict access to specific instances based on field values.
+ *   Multiple WHERE conditions can be combined with AND/OR.
+ *
+ *   define role ZPRAC_CDS_SIMPLE_AC {
+ *     grant select on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '03', AGENCY = $sy_user_agr() )
+ *         and (Status) = aspect pfcg_auth( /DMO/TRV_STATUS, ACTVT = '03', STATUS = $sy_user_agr() );
+ *   }
+ *
+ * ADVANCED DCL — ACCESS POLICIES FOR READ/WRITE:
+ *   Use different PFCG activities for read vs write access.
+ *
+ *   define role ZPRAC_CDS_SIMPLE_AC {
+ *     grant select on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '03', AGENCY = $sy_user_agr() );
+ *
+ *     grant insert on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '01', AGENCY = $sy_user_agr() );
+ *
+ *     grant update on ZPRAC_CDS_SIMPLE
+ *       where (AgencyId) = aspect pfcg_auth( /DMO/TRV, ACTVT = '02', AGENCY = $sy_user_agr() );
+ *   }
+ *
+ * BEST PRACTICE RULES:
+ *   ┌────────────────────────────────────────────────┬────────────────────────────┐
+ *   │ Rule                                           │ Reason                     │
+ *   ├────────────────────────────────────────────────┼────────────────────────────┤
+ *   │ Always use @AccessControl.authorizationCheck   │ Required for DCL to apply  │
+ *   │ Use #CHECK at consumption layer                │ Enforces row-level security│
+ *   │ Use inherit access for VDM layer stacking      │ Avoids DCL duplication     │
+ *   │ Use define aspect for reusable conditions      │ DRY principle              │
+ *   │ Grant different activities per operation       │ Principle of least privilege│
+ *   │ Never use DCL on private/interface views       │ Internal views don't need it│
+ *   │ Always run unit tests with DISABLE_DCL         │ Avoid flaky tests          │
+ *   └────────────────────────────────────────────────┴────────────────────────────┘
+ * ====================================================================
+ * DIAGRAM: assets/diagrams/dcl-flow.svg
+ */

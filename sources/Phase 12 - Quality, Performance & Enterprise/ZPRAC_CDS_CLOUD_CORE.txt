@@ -1,0 +1,150 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_CLOUD_CORE
+ * PURPOSE : CDS in ABAP Cloud & Clean Core Strategy — Modern
+ *           cloud-ready CDS development
+ * TOPIC   : ABAP Cloud language version, clean-core extensibility,
+ *           release contracts, cloud vs on-premise
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. ABAP Cloud development model requires `#CLOUD_DEVELOPMENT` as
+ *      the language version — only released APIs are allowed. The
+ *      compiler enforces this at compile time.
+ *   2. Released APIs are marked with `@ABAP.ReleaseState: #RELEASED`
+ *      in the system library (ADT). Using unreleased objects causes
+ *      a syntax error in cloud projects.
+ *   3. Clean-core extensibility: SAP's standard namespace (/DMO/, /SAP/)
+ *      is locked. Extensions go into customer namespace (Z*, Y*) via
+ *      CDS appends, custom fields, custom logic, and RAP BO extensions.
+ *   4. Cloud vs on-premise differences: `define view entity` is
+ *      mandatory in cloud (DDIC-based `define view` is not allowed);
+ *      no direct RFC/BAPI calls; no ABAP SQL in OPEN SQL that bypasses
+ *      CDS; `@AbapCatalog.sqlViewName` is deprecated.
+ *   5. Extensibility via `@EndUserText.label: 'Custom'` and
+ *      `@Extensible: true` on CDS views allows customers to append
+ *      fields without modifying the original view.
+ *   6. CDS view extensions (`extends view`) add fields from customer
+ *      tables or custom logic without changing standard CDS — key
+ *      ingredient of the "clean-core" approach.
+ *   7. Use ADT's system library (Object Explorer > Properties) to
+ *      verify the release state of any API before using it.
+ *   8. Upgrade-safe custom code means using only released APIs,
+ *      extending via enhancement options, and never modifying SAP
+ *      objects. SAP guarantees backward compatibility of released APIs.
+ *
+ * ====================================================================
+ * COMPARISON TABLE: ON-PREMISE CDS vs ABAP CLOUD CDS
+ * ====================================================================
+ *
+ *  Aspect                   On-Premise CDS               ABAP Cloud CDS
+ *  -----------------------  ---------------------------  ---------------------------
+ *  Language version         Standard ABAP (#STANDARD)    #CLOUD_DEVELOPMENT
+ *  View definition          define view (deprecated)     define root view entity
+ *  DDIC compatibility       CDS DDIC-based views         No DDIC view dependency
+ *  SQL View name            @AbapCatalog.sqlViewName    Deprecated — use entity name
+ *  API usage                Any API                     Only @ABAP.ReleaseState: #RELEASED
+ *  DB hints                 Allowed                     Not allowed in cloud
+ *  Modifications            Can modify SAP objects       Never modify — extend only
+ *  Extensibility            SAP Notes, corrections       Key-user / developer appends
+ *  Deployment               On-prem S/4, BW, etc        S/4HANA Cloud, BTP ABAP
+ *  Transport mechanism      CTS (file-based)            gCTS / abapGit / ADT-managed
+ *  RFC/BAPI                 Allowed                     Not allowed (use RAP / OData)
+ *  Authorization            DCL + SU22                  DCL + IAM apps
+ *  Buffer behavior          Full buffer control         @AccessControl.authorizationCheck
+ *  Upgrade protection       Manual regression           Automatic — released API contracts
+ *
+ * ====================================================================
+ * 1. CDS VIEW EXTENSION — ADDITIVE EXTENSIBILITY
+ * ====================================================================
+ */
+@EndUserText.label: 'Extension for Travel — customer fields'
+@AbapCatalog.enhancement.allowExtend: true
+define view entity ZPRAC_TRAVEL_EXTENSION
+  as select from /dmo/travel
+{
+  key travel_id
+}
+// Customer appends fields here — the extension is an additive layer
+// on top of the standard view without modifying it.
+
+/*
+ * ---- CDS Append View (customer namespace) ----
+ * File: ZPRAC_APPEND_TRAVEL_CUSTOMER.ddls (appended to ZPRAC_TRAVEL_OPTIMIZED)
+ *
+ *  @EndUserText.label: 'Customer-specific fields for Travel'
+ *  extend view entity ZPRAC_TRAVEL_OPTIMIZED with ZPRAC_APPEND_TRAVEL
+ *  {
+ *    cast( '' as ZCUSTOMER_STATUS_C ) as ZCustomerStatusExt
+ *  }
+ *
+ * ====================================================================
+ * 2. RELEASED API ANNOTATION — SYSTEM LIBRARY EXAMPLE
+ * ====================================================================
+ *
+ * The following annotation appears in SAP-delivered CDS views to
+ * declare their API contract.  ADT highlights these in the system
+ * library browser:
+ *
+ *  @ABAP.ReleaseState: #RELEASED
+ *
+ * Use this as a gate: if an object lacks this annotation (or is marked
+ * #DEPRECATED / #NOT_RELEASED), it is NOT allowed in ABAP Cloud.
+ *
+ * ====================================================================
+ * 3. CLEAN-CORE COMPLIANT CUSTOM CDS — RELEASED APIS ONLY
+ * ====================================================================
+ */
+@EndUserText.label: 'Clean-Core Custom Travel Analysis'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@AbapCatalog.compiler.compareFilter: true
+define root view entity ZPRAC_CLEAN_CORE_TRAVEL
+  as select from /dmo/travel
+{
+  key travel_id,
+      customer_id,
+      agency_id,
+      total_price,
+      currency_code,
+      status,
+      created_at
+}
+/*
+ *  This view uses:
+ *    - Only released CDS entities from /DMO/ namespace
+ *    - No deprecated define view (uses define root view entity)
+ *    - No @AbapCatalog.sqlViewName (cloud-declared as deprecated)
+ *    - Explicit authorization check annotation
+ *    - No direct DB table references — goes through /DMO/travel entity
+ *
+ *  It is fully compliant with the ABAP Cloud clean-core strategy.
+ *
+ * ====================================================================
+ * 10 STEPS TO CLEAN-CORE CDS DEVELOPMENT — CHECKLIST
+ * ====================================================================
+ *
+ *  #  Step
+ * --- ---------------------------------------------------------------
+ *  1  SET language version to #CLOUD_DEVELOPMENT in the CDS source
+ *     header (or ADT project properties).
+ *  2  USE only released CDS entities — verify the release state in
+ *     the system library (look for @ABAP.ReleaseState: #RELEASED).
+ *  3  DEFINE views as root view entity — never use deprecated
+ *     define view.  Always add `root` for top-level views.
+ *  4  EXTEND standard views via CDS append views (extend view entity)
+ *     instead of modifying SAP objects.  This survives upgrades.
+ *  5  ANNOTATE custom CDS with explicit @AccessControl.authorizationCheck
+ *     and @EndUserText.label for documentation and governance.
+ *  6  AVOID RFC/BAPI calls in CDS or in the underlying RAP behavior —
+ *     use released OData or RAP APIs instead.
+ *  7  OMIT @AbapCatalog.sqlViewName — it is deprecated in cloud.
+ *     Rely on the entity name for SQL consumption.
+ *  8  USE adaptive RFC (via released OData services) if you need
+ *     remote access — never call BAPIs directly.
+ *  9  TEST after every SAP upgrade with ATC — released API contracts
+ *     guarantee no breaking changes when the contract is honored.
+ * 10  DOCUMENT the clean-core compliance level in the CDS header
+ *     (as shown in this file) — mark which APIs are released and
+ *     which are customer-only extensions.
+ * ====================================================================
+ */

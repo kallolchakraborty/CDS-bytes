@@ -1,0 +1,52 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_VIEW_ENTITY
+ * SQL VIEW: ZPRAC_CDS_VIEW_ENTITY
+ * PURPOSE : Modern CDS View Entity syntax — `define view entity` /
+ *           `define root view entity` without SQL view name
+ * TOPIC   : CDS View Entity — modern replacement for `define view`
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. `define view entity` drops the mandatory @AbapCatalog.sqlViewName
+ *      — the CDS entity name IS the runtime SQL view name.
+ *   2. `define root view entity` marks the view as a RAP root node,
+ *      enabling transactional behaviour in OData / Fiori apps.
+ *   3. `define view entity` (non-root) is used for reusable association
+ *      views or composition children.
+ *   4. All existing CDS annotations (@Semantics, @Analytics, etc.)
+ *      work identically with the view-entity syntax.
+ *   5. View entities integrate natively with RAP BOs, OData V4, and
+ *      later EML without wrapper views.
+ *   6. Using view entities is forward-compatible — SAP recommends this
+ *      syntax for all new developments.
+ *
+ * COMPARISON — Old vs New Syntax:
+ *
+ *   --- OLD: define view with sqlViewName ---
+ *   @AbapCatalog.sqlViewName: 'ZPRAC_OLD_SIMPLE'
+ *   define view ZPRAC_CDS_SIMPLE
+ *     as select from /dmo/travel { ... }
+ *
+ *   --- NEW: define view entity (no sqlViewName) ---
+ *   define root view entity ZPRAC_CDS_VIEW_ENTITY
+ *     as select from /dmo/travel { ... }
+ *
+ * ====================================================================
+ */
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'CDS View Entity — modern syntax'
+define root view entity ZPRAC_CDS_VIEW_ENTITY
+  as select from /dmo/travel
+{
+  key travel_id     as TravelId,
+      agency_id     as AgencyId,
+      customer_id   as CustomerId,
+      begin_date    as BeginDate,
+      end_date      as EndDate,
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      total_price   as TotalPrice,
+      @Semantics.currencyCode: true
+      currency_code as CurrencyCode,
+      description   as Description
+}

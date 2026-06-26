@@ -1,0 +1,153 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_NUMBERING
+ * PURPOSE : CDS Early vs Late Numbering — Key assignment strategies in RAP
+ * TOPIC   : Early numbering, late numbering, managed vs unmanaged
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Early numbering assigns keys BEFORE the creation request reaches
+ *      the database — the key is known immediately in the ABAP layer.
+ *   2. Late numbering assigns keys AFTER the database insert — the system
+ *      uses a number range or database sequence to generate the key.
+ *   3. Managed RAP with early numbering: use `with early numbering` in
+ *      the behavior definition; keys are assigned in the `early_numbering`
+ *      method or via `ETAG` / `NUMBER` mapping.
+ *   4. Managed RAP with late numbering: the database (or CDS view) provides
+ *      the key; the RAP framework reads it back after the `save` sequence.
+ *   5. `@ObjectModel.usageType.serviceQuality: #EARLY_NUMBERING` on the CDS
+ *      element hints at the intended strategy for service contracts.
+ *   6. In unmanaged RAP, numbering is fully manual — the implementation
+ *      class handles key assignment with `number object` or `UUID` creation.
+ *   7. Draft-enabled BOs typically use early numbering so the draft key
+ *      is known before the first save to the draft table.
+ *
+ * ====================================================================
+ * COMPARISON: Early vs Late vs Unmanaged Numbering
+ * ====================================================================
+ *  Aspect              | Early                     | Late                   | Unmanaged
+ * ---------------------------------------------------------------------------------------------------------
+ *  Key source          | ABAP (number range / UUID)| DB sequence / identity | Fully manual (class)
+ *  Key known           | Before `save`             | After `save`           | In implementation method
+ *  Draft support       | Yes (preferred)           | Limited                | Manual
+ *  Behavior def syntax | `with early numbering`    | `with late numbering`  | None (implementation driven)
+ *  Use case            | Fiori transactional       | Non-draft / migration  | Legacy / custom
+ *  Etag handling       | Before modification       | After modification     | Implementation decides
+ * ====================================================================
+ */
+/*
+ * ====================================================================
+ * CDS — Root View with Early Numbering Annotation (Conceptual)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Practice RAP BO — Early Numbered'
+define root view entity ZPRAC_CDS_EB_Booking
+  as select from /dmo/booking
+{
+  key booking_id     as BookingId,
+      travel_id      as TravelId,
+      booking_date   as BookingDate,
+      customer_id    as CustomerId,
+      @ObjectModel.usageType.serviceQuality: #EARLY_NUMBERING
+      booking_status as BookingStatus
+}
+
+/*
+ * ====================================================================
+ * RAP Behavior Definition — Early Numbering
+ * ====================================================================
+ */
+
+managed with early numbering
+implementation in class zbp_prac_booking unique;
+
+define behavior for ZPRAC_CDS_EB_Booking alias Booking
+persistent table /dmo/booking
+lock master
+etag BookingDate
+{
+  create;
+  update;
+  delete;
+
+  mapping for /dmo/booking
+  {
+    BookingId   = booking_id;
+    TravelId    = travel_id;
+    BookingDate = booking_date;
+    CustomerId  = customer_id;
+  }
+}
+
+/*
+ * ====================================================================
+ * ABAP Class — Early Numbering Implementation
+ * ====================================================================
+ */
+
+CLASS zbp_prac_booking IMPLEMENTATION.
+
+  METHOD early_numbering_create.
+    DATA(entities) = entities_in.
+
+    " Assign booking_id using number range object
+    LOOP AT entities REFERENCE INTO DATA(entity).
+      DATA(booking_id) = cl_numberrange_runtime=>get_next(
+        EXPORTING
+          number_range_object = 'ZBOOKING'
+          quantity = 1
+        IMPORTING
+          number   = DATA(next_number)
+      ).
+      entity->BookingId = |{ next_number WIDTH = 8 }|.
+    ENDLOOP.
+
+    mapped-booking = CORRESPONDING #( entities ).
+  ENDMETHOD.
+
+ENDCLASS.
+
+/*
+ * ====================================================================
+ * RAP Behavior Definition — Late Numbering
+ * ====================================================================
+ */
+
+managed with late numbering
+implementation in class zbp_prac_booking_late unique;
+
+define behavior for ZPRAC_CDS_EB_Booking alias BookingLate
+persistent table /dmo/booking
+lock master
+etag BookingDate
+{
+  create;
+  update;
+  delete;
+
+  mapping for /dmo/booking
+  {
+    BookingId   = booking_id;
+    TravelId    = travel_id;
+    BookingDate = booking_date;
+    CustomerId  = customer_id;
+  }
+}
+
+/*
+ * ====================================================================
+ * ABAP Class — Late Numbering (key assigned by database)
+ * ====================================================================
+ */
+
+CLASS zbp_prac_booking_late IMPLEMENTATION.
+
+  METHOD late_numbering_create.
+    " RAP framework reads back the key after database insert.
+    " The system automatically populates mapped-booking with
+    " the booking_id as assigned by the DB sequence.
+    " No manual ABAP code required in the standard case.
+  ENDMETHOD.
+
+ENDCLASS.

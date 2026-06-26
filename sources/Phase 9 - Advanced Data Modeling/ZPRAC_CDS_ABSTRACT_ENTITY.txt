@@ -1,0 +1,106 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_ABSTRACT_ENTITY
+ * PURPOSE : CDS Abstract Entities — Structure types for RAP action signatures and API contracts
+ * TOPIC   : define abstract entity for typed interfaces without data persistence
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. `define abstract entity` creates a CDS data type without generating any
+ *      database object — it exists purely as a design-time type contract.
+ *   2. No DDIC or database object is created when activated; abstract entities
+ *      are zero-footprint types used only in the CDS / RAP type system.
+ *   3. They are the primary way to type RAP action parameters, return structures,
+ *      and OData function import signatures without needing a DDIC structure.
+ *   4. Abstract entities can be used as association targets when the association
+ *      is never materialised (e.g., a navigation that never needs a join).
+ *   5. `ANNOTATE ENTITY ZPRAC_ABST_AIRPORT_DIST` enables metadata extensions
+ *      without changing the source definition — useful for UI annotations.
+ *
+ * ====================================================================
+ * USE CASES FOR ABSTRACT ENTITIES
+ * ====================================================================
+ *  Use Case                         | Example
+ * -------------------------------------------------------------------------
+ *  RAP action input parameters      | Action Input: ZPRAC_ABST_AIRPORT_DIST
+ *  RAP action result type           | Action Result: ZPRAC_ABST_AIRPORT_DIST
+ *  OData function import parameters | Function Import: CalculateDistance
+ *  Association target (no instance) | _Airport as ZPRAC_ABST_Airport
+ *  Metadata extension target        | ANNOTATE ENTITY ZPRAC_ABST_AIRPORT_DIST
+ *  Remote API communication         | Input/output contract for outbound services
+ * ====================================================================
+ */
+/*
+ * ====================================================================
+ * CDS — Abstract Entity for RAP Action Signature
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Abstract Entity — Airport Distance Action'
+define abstract entity ZPRAC_ABST_AIRPORT_DIST
+{
+  @EndUserText.label: 'Departure Airport Code'
+  dep_airport : abap.char(3);
+
+  @EndUserText.label: 'Destination Airport Code'
+  dest_airport : abap.char(3);
+
+  @EndUserText.label: 'Distance in Kilometers'
+  distance_km  : abap.dec(10,2);
+
+  @EndUserText.label: 'Unit of Measure'
+  @Semantics.unitOfMeasure: true
+  distance_uom : abap.char(3);
+}
+
+/*
+ * ====================================================================
+ * CDS — Metadata Extension for the Abstract Entity
+ * ====================================================================
+ */
+
+@UI: {
+  headerInfo: { typeName: 'Airport Distance', typeNamePlural: 'Airport Distances' },
+  presentationVariant: [{ sortOrder: [{ by: 'distance_km', direction: #DESC }] }]
+}
+annotate entity ZPRAC_ABST_AIRPORT_DIST with
+{
+  @UI: { lineItem: [{ position: 10 }], identification: [{ position: 10 }] }
+  dep_airport;
+
+  @UI: { lineItem: [{ position: 20 }], identification: [{ position: 20 }] }
+  dest_airport;
+
+  @UI: { lineItem: [{ position: 30 }], identification: [{ position: 30 }] }
+  distance_km;
+
+  @UI: { lineItem: [{ position: 40 }], identification: [{ position: 40 }] }
+  distance_uom;
+}
+
+/*
+ * ====================================================================
+ * RAP Behavior Definition — Action using the Abstract Entity
+ * ====================================================================
+ */
+
+managed implementation in class zbp_prac_travel unique;
+internal.
+
+define behavior for ZPRAC_CDS_C_TravelWithMessage alias TravelMessage
+persistent table /dmo/travel
+draft table /dmo/td_travel
+lock master
+etag last_changed_at
+{
+
+  /* ... existing field & association definitions ... */
+
+  action ( features : instance )
+    CalculateAirportDistance
+    parameter  ZPRAC_ABST_AIRPORT_DIST   " input
+    result ZPRAC_ABST_AIRPORT_DIST;      " output
+
+  /* ... further actions & validations ... */
+
+}

@@ -1,0 +1,74 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_SERVICE_EXPOSE
+ * SQL VIEW: ZPRAC_SQL_SRVEXP
+ * PURPOSE : Service Definition & Binding — Exposing CDS views as OData services for Fiori Elements
+ * TOPIC   : OData service exposure — Service Definition → Service Binding → Fiori preview
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Service Definition is the contract — it selects which CDS views
+ *      are exposed and under which alias names for the OData service
+ *   2. Service Binding binds the definition to a protocol (OData v2 /
+ *      OData v4 / InA) and a transport request, enabling Fiori preview
+ *   3. UI5 / Fiori Elements preview is launched directly from the
+ *      Service Binding in ADT (right-click → Open Fiori Elements App)
+ *   4. Draft-enabled views (@OData.draft.enabled) require explicit
+ *      draft handling via RAP behavior — read-only views do not
+ *   5. $select (projection) and $expand (navigation) behavior depends
+ *      on the exposed associations in the Service Definition
+ *   6. SAP Gateway (SEGW) vs RAP-based exposure:
+ *      ┌────────────┬──────────────────────┬──────────────────────┐
+ *      │ Aspect     │ Gateway (SEGW)       │ RAP-based            │
+ *      ├────────────┼──────────────────────┼──────────────────────┤
+ *      │ Approach   │ Classic, model-based │ Code-pushdown, CDS   │
+ *      │ Perform.   │ Server-side          │ Database-pushdown    │
+ *      │ Draft      │ Manual handling      │ Automatic via BDEF   │
+ *      │ Cloud-ready│ No                   │ Yes                  │
+ *      └────────────┴──────────────────────┴──────────────────────┘
+ *   7. Clean-core best practices: use RAP-based exposure, keep
+ *      Service Definitions focused on one business object, avoid
+ *      exposing tables directly, and use view entities (CDS VE)
+ *      instead of classic views
+ *
+ * SERVICE BINDING REFERENCE (in ADT):
+ *   ┌──────────────────────────────────────────────────────────────┐
+ *   │ Service Definition:  ZPRAC_SERVICE_TRAVEL                    │
+ *   │ Service Binding:     ZPRAC_BINDING_TRAVEL                    │
+ *   │ Binding Type:        OData v4 - UI5 Service                  │
+ *   │ Transport:           <TRKQ>123456                            │
+ *   │ Fiori Preview URL:   /sap/opu/odata4/sap/ZPRAC_TRAVEL/…     │
+ *   │                                                              │
+ *   │ Steps in ADT:                                                │
+ *   │   1. New → Service Definition → select CDS root VE           │
+ *   │   2. Add EXPOSE statements for child entities                │
+ *   │   3. New → Service Binding → choose Service Definition       │
+ *   │   4. Set binding type = OData v4 - UI5 Service               │
+ *   │   5. Activate → right-click → Open Fiori Elements App        │
+ *   └──────────────────────────────────────────────────────────────┘
+ *
+ * USAGE IN ABAP (Fiori app consumption via /UI5/ABAP):
+ *   The OData service is consumed by a Fiori Elements app using
+ *   the SAPUI5 manifest.json:
+ *
+ *   "dataSources": {
+ *     "travelService": {
+ *       "uri": "/sap/opu/odata4/sap/ZPRAC_TRAVEL/",
+ *       "type": "OData",
+ *       "settings": { "odataVersion": "4.0" }
+ *     }
+ *   },
+ *   "models": {
+ *     "": { "dataSource": "travelService" }
+ *   }
+ *
+ *   The Fiori app uses smart controls (SmartTable, SmartForm, etc.)
+ *   which read @UI annotations from the CDS metadata to auto-generate
+ *   columns, filters, and object pages — no manual OData calls needed.
+ * ====================================================================
+ */
+@EndUserText.label: 'Service for Travel Data'
+define service ZPRAC_SERVICE_TRAVEL {
+  expose ZPRAC_CDS_VIEW_ENTITY as Travel;
+  expose ZPRAC_CDS_ASSOCIATION as Booking;
+}

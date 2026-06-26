@@ -1,0 +1,107 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_CUSTOM_ENTITY
+ * PURPOSE : CDS Custom Entities — Non-DDIC data sources with ABAP-based data retrieval
+ * TOPIC   : define custom entity for external data, APIs, and complex logic
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. `define custom entity` creates a typed CDS data source without a
+ *      corresponding database table or DDIC structure — purely definitional.
+ *   2. `@ObjectModel.query.implementedBy: 'ABAP:ZCL_...'` binds the entity to
+ *      an ABAP class that provides the data at runtime.
+ *   3. `define root custom entity` enables full RAP support (transactional
+ *      behaviour, draft, etc.) — without `root` only read access is possible.
+ *   4. The ABAP class must implement `IF_RAP_QUERY_PROVIDER` for RAP integration
+ *      or `IF_SADL_QUERY_PROVIDER` for plain CDS consumption.
+ *   5. Method IF_RAP_QUERY_PROVIDER~SELECT( ) receives the request filter,
+ *      sorting, and paging and must return data as an internal table.
+ *   6. Custom entities are ideal for wrapping external APIs (RFC, SOAP, OData),
+ *      calling BAPIs, aggregating disparate data sources, or any logic that
+ *      cannot be expressed in standard SQL.
+ *
+ * ====================================================================
+ * COMPARISON: Custom Entity vs Table Function vs Virtual Element
+ * ====================================================================
+ *  Feature                | Custom Entity              | Table Function            | Virtual Element
+ * ---------------------------------------------------------------------------------------------------------
+ *  Base object            | CDS definition only        | AMDP / HANA function      | CDS projection view
+ *  Data source            | Any ABAP logic / API       | HANA SQLScript / SQL      | Same DB table as parent
+ *  Code pushdown          | No (ABAP layer)            | Yes (HANA layer)          | No (ABAP layer)
+ *  RAP transactional      | Yes (define root)          | No (read-only)            | Yes (in RAP projection)
+ *  DDL / DML support      | No (cannot INSERT/SELECT)  | SELECT only               | No (computed only)
+ *  Parameter support      | Yes (CDS parameters)       | No                        | No
+ *  Association target     | Yes                        | Yes                       | Yes
+ *  Use case               | External API, BAPI, RFC    | High-performance SQL algo | Simple ABAP enrichment
+ * ====================================================================
+ * DIAGRAM: assets/diagrams/custom-entity-flow.svg
+ */
+/*
+ * ====================================================================
+ * CDS — Custom Entity for Purchase Order (Conceptual)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Custom Entity — Purchase Order Data'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+
+@ObjectModel.query.implementedBy: 'ABAP:ZCL_PRAC_PURCHASE_QUERY'
+
+define root custom entity ZPRAC_CDS_C_PurchaseOrder
+{
+  key PurchaseOrder  : abap.char(10);
+      CompanyCode    : abap.char(4);
+      Supplier       : abap.char(10);
+      GrossAmount    : abap.curr(15,2);
+      Currency       : abap.char(5);
+      CreatedBy      : abap.char(12);
+      CreatedAt      : abap.dec(15,0);
+}
+with parameters
+  @Environment.systemField: #SYSTEM_DATE
+  p_cutoff_date : abap.dats
+
+/*
+ * ====================================================================
+ * ABAP Class — Query Provider Implementation
+ * ====================================================================
+ */
+
+CLASS zcl_prac_purchase_query DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES if_rap_query_provider.
+ENDCLASS.
+
+CLASS zcl_prac_purchase_query IMPLEMENTATION.
+
+  METHOD if_rap_query_provider~select.
+    " Retrieve filter, paging, and request context.
+    DATA(request_filter) = io_request->get_filter( ).
+    DATA(paging)         = io_request->get_paging( ).
+    DATA(cutoff_date)    = io_request->get_parameters( )->get( `P_CUTOFF_DATE` ).
+
+    " Simulate / API call to fetch purchase order data.
+    " In production this would call an external OData / RFC / BAPI.
+    DATA(purchase_orders) = VALUE ztab_purchase_order( ).
+    " ... external API call goes here ...
+
+    " Apply client-side filter (if the API cannot handle it).
+    IF request_filter IS NOT INITIAL.
+      DATA(filtered_data) = request_filter->apply( purchase_orders ).
+    ENDIF.
+
+    " Apply paging.
+    DATA(offset) = paging->get_offset( ).
+    DATA(page_size) = paging->get_page_size( ).
+    IF page_size = if_rap_query_paging=>page_size_unlimited.
+      io_response->set_total_number_of_records( lines( filtered_data ) ).
+      io_response->set_data( filtered_data ).
+    ELSE.
+      DATA(paged_data) = filtered_data.
+      " … apply offset & page_size slicing …
+      io_response->set_total_number_of_records( lines( filtered_data ) ).
+      io_response->set_data( paged_data ).
+    ENDIF.
+  ENDMETHOD.
+
+ENDCLASS.

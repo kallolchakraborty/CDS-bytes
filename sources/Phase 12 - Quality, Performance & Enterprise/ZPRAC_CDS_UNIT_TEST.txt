@@ -1,0 +1,226 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_UNIT_TEST
+ * PURPOSE : CDS Unit Testing with Test Double Framework — Isolated
+ *           verification of CDS view logic
+ * TOPIC   : Automated testing of CDS views using CL_CDS_TEST_ENVIRONMENT
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. CL_CDS_TEST_ENVIRONMENT=>CREATE() creates a test double
+ *      environment that replaces the underlying dictionary tables of a
+ *      CDS view with in-memory test data — no real database access.
+ *   2. GET_DOUBLE()->INSERT() injects test data into the double tables
+ *      before the CDS SELECT executes. Data lifetime is scoped to the
+ *      test method / class.
+ *   3. Wrap tests in an ABAP Unit class (CLASS ... FOR TESTING) with
+ *      SETUP and TEARDOWN methods. TEARDOWN must call DESTROY() to
+ *      release the environment.
+ *   4. DISABLE_DCL (via CL_CDS_TEST_ENVIRONMENT=>GET_DCL()) bypasses
+ *      DCL / DCLX (access control) during tests — crucial for
+ *      isolating view logic from authorization rules.
+ *   5. Test WHERE clause filtering, CASE and COALESCE expressions, and
+ *      calculated fields. These contain business logic prone to error.
+ *   6. Integrate with ATC (ABAP Test Cockpit) — CDS unit tests are
+ *      discovered and executed automatically when configured in the
+ *      test class as FOR TESTING.
+ *   7. CI/CD pipeline integration: execute via RUN_ATC or CL_ATC_API.
+ *      Gate the build on CDS test results.
+ *
+ * TIPS — WHAT TO TEST:
+ *   ✓ Calculated fields (CASE, COALESCE, aggregation)
+ *   ✓ WHERE clause correctness (boundary values, NULL handling)
+ *   ✓ Associations that project fields into the result
+ *   ✓ Currency/unit conversion logic
+ *   ✓ @Consumption annotations that affect client behavior
+ *
+ * TIPS — WHAT NOT TO TEST:
+ *   ✗ Simple 1:1 projections from a single table (pure pass-through)
+ *   ✗ Pure annotation changes (annotations do not alter result rows)
+ *   ✗ Database-internal optimizations (compareFilter, merge behavior)
+ *   ✗ DCL / authorization (test those via SAML / authorization unit tests)
+ *
+ * ====================================================================
+ * ABAP UNIT TEST CLASS — CDS VIEW TEST DOUBLE
+ * ====================================================================
+ */
+CLASS zcl_cds_test_travel_demo DEFINITION FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS.
+
+  PRIVATE SECTION.
+    DATA:
+      mv_cut_name    TYPE string,
+      mo_test_env    TYPE REF TO if_cds_test_environment,
+      mo_travel_dbl  TYPE REF TO if_cds_test_data,
+      mo_booking_dbl TYPE REF TO if_cds_test_data.
+
+    METHODS:
+      setup,
+      teardown,
+      " --- Test Cases ---
+      filter_by_status         FOR TESTING,
+      calculated_price_field   FOR TESTING,
+      case_when_category       FOR TESTING,
+      null_handling_coalesce   FOR TESTING.
+
+ENDCLASS.
+
+
+CLASS zcl_cds_test_travel_demo IMPLEMENTATION.
+
+  METHOD setup.
+    " 1. Create test environment for the CDS view under test
+    mo_test_env = cl_cds_test_environment=>create(
+                    i_for_entity = 'ZPRAC_TRAVEL_OPTIMIZED' ).
+
+    " 2. Disable DCL so authorization checks don't pollute results
+    mo_test_env->get_dcl( )->disable_dcl( ).
+
+    " 3. Obtain data doubles for underlying tables
+    mo_travel_dbl  = mo_test_env->get_double( i_name = '/DMO/TRAVEL' ).
+    mo_booking_dbl = mo_test_env->get_double( i_name = '/DMO/BOOKING' ).
+
+    " 4. Insert test data (2 travel records with different statuses)
+    mo_travel_dbl->insert( VALUE #(
+      ( travel_id  = '00000001'
+        agency_id  = '000001'
+        customer_id = '000001'
+        total_price = '1000.00'
+        currency_code = 'USD'
+        status     = 'A'           " Accepted
+        created_by = 'TESTUSER'
+        created_at = '20250101000000' )
+      ( travel_id  = '00000002'
+        agency_id  = '000002'
+        customer_id = '000002'
+        total_price = '2500.00'
+        currency_code = 'EUR'
+        status     = 'B'           " Booked
+        created_by = 'TESTUSER'
+        created_at = '20250101000000' )
+    ) ).
+
+    " 5. Insert booking data for association tests
+    mo_booking_dbl->insert( VALUE #(
+      ( booking_id   = '00000001'
+        travel_id    = '00000001'
+        booking_status = 'N' )
+    ) ).
+
+  ENDMETHOD.
+
+  METHOD teardown.
+    mo_test_env->destroy( ).
+  ENDMETHOD.
+
+  METHOD filter_by_status.
+    " --- Test: WHERE clause filters on status = 'A' ---
+    SELECT *
+      FROM zprc_travel_optimized(
+             p_mandt     = sy-mandt,
+             p_status    = 'A',
+             p_min_price = '0' )
+      INTO TABLE @DATA(lt_result).
+
+    cl_abap_unit_assert=>assert_equals(
+      exp = 1
+      act = lines( lt_result )
+      msg = 'Filter for status A should return exactly 1 row' ).
+
+    READ TABLE lt_result ASSIGNING FIELD-SYMBOL(<fs>) INDEX 1.
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000001'
+      act = <fs>-travel_id
+      msg = 'Travel ID of status A row' ).
+  ENDMETHOD.
+
+  METHOD calculated_price_field.
+    " --- Test: Price value is projected correctly ---
+    SELECT *
+      FROM zprc_travel_optimized(
+             p_mandt     = sy-mandt,
+             p_status    = 'B',
+             p_min_price = '0' )
+      INTO TABLE @DATA(lt_result).
+
+    cl_abap_unit_assert=>assert_not_initial(
+      act = lt_result
+      msg = 'Result should be non-empty for status B' ).
+
+    READ TABLE lt_result ASSIGNING FIELD-SYMBOL(<fs>) INDEX 1.
+    cl_abap_unit_assert=>assert_equals(
+      exp = '2500.00'
+      act = <fs>-total_price
+      msg = 'Total price should match injected value' ).
+  ENDMETHOD.
+
+  METHOD case_when_category.
+    " --- Test: CASE expression categorizes data ---
+    " This assumes a CASE expression exists in the view
+    " that categorizes e.g. price as 'HIGH', 'MEDIUM', 'LOW'
+    SELECT *
+      FROM zprc_travel_optimized(
+             p_mandt     = sy-mandt,
+             p_status    = 'A',
+             p_min_price = '0' )
+      INTO TABLE @DATA(lt_result).
+
+    " Example assertion — adapt to your actual CASE field name
+    LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<fs>).
+      " cl_abap_unit_assert=>assert_char_cp(
+      "   exp = 'MEDIUM*'
+      "   act = <fs>-price_category ).
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD null_handling_coalesce.
+    " --- Test: COALESCE replaces initial currency_code ---
+    " Insert a record with initial currency to verify COALESCE
+    mo_travel_dbl->insert( VALUE #(
+      ( travel_id    = '00000003'
+        agency_id    = '000003'
+        customer_id  = '000003'
+        total_price  = '500.00'
+        currency_code = ''
+        status       = 'A'
+        created_by   = 'TESTUSER'
+        created_at   = '20250101000000' )
+    ) ).
+
+    SELECT singLE *
+      FROM zprc_travel_optimized(
+             p_mandt     = sy-mandt,
+             p_status    = 'A',
+             p_min_price = '0' )
+      WHERE travel_id = '00000003'
+      INTO @DATA(ls_result).
+
+    " If the view uses COALESCE( currency_code, 'USD' ), assert fallback
+    " cl_abap_unit_assert=>assert_equals(
+    "   exp = 'USD'
+    "   act = ls_result-currency_code ).
+  ENDMETHOD.
+
+ENDCLASS.
+
+/*
+ * ====================================================================
+ * CI/CD INTEGRATION (Pseudo-configuration)
+ * ====================================================================
+ *
+ *  Jenkins / GitHub Actions step:
+ *    RUN_ATC  (or  CL_ATC_API=>RUN_ATC  via ABAP)
+ *      --package  = $ZPRAC_CDS_PACKAGE
+ *      --check    = CDS_UNIT_TEST
+ *      --severity = ERROR
+ *
+ *  The ATC variant ZPRAC_CDS_TEST_VARIANT activates the unit-test
+ *  checks for the test class category CLAS_UT (ABAP Unit).
+ *
+ *  Pipeline gates:
+ *    - FAIL if any CDS unit test returns ERROR or FATAL
+ *    - WARN on WARNING severity findings
+ *
+ * ====================================================================
+ */

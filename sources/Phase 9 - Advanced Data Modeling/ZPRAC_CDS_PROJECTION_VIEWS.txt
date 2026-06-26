@@ -1,0 +1,131 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_PROJECTION_VIEWS
+ * PURPOSE : CDS Projection Views & Provider Contracts —
+ *           Transactional Query, Analytical Query,
+ *           Transactional Interface
+ * TOPIC   : provider contract clause
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. define projection view (or define root view entity as projection
+ *      on) creates a projection of an existing CDS view entity — it does
+ *      not define new associations or logic, only selects and exposes
+ *      elements from the underlying source.
+ *   2. The provider contract clause (available since ABAP kernel 7.83)
+ *      declares the semantic contract of the projection, determining
+ *      which OData / InA / RAP consumers are allowed to access it.
+ *   3. provider contract transactional_query is used for transactional
+ *      Fiori UIs built with RAP — these projections are exposed via
+ *      OData services and are typically root views in a business object.
+ *   4. provider contract transactional_interface defines a projection
+ *      that serves as the interface of a RAP business object — it is
+ *      consumed by other RAP BOs or by service bindings and must follow
+ *      strict interface release contracts.
+ *   5. provider contract analytical_query creates a V3 analytical
+ *      projection consumed by SAP Analytics Cloud / InA protocol —
+ *      no direct SQL reading is allowed (only InA-based tools).
+ *   6. Projection views do NOT create a new DDIC artifact; they are
+ *      pure CDS runtime objects. They cannot define new associations,
+ *      but existing associations from the source view are visible.
+ *   7. root vs non-root: define root view entity marks the projection
+ *      as a root node (for transactional scenarios), while a non-root
+ *      projection delegates the root definition to the source.
+ *   8. Release contracts (@AbapCatalog.interface) can be applied to
+ *      projection views to govern API stability, ensuring consumers
+ *      are not broken by internal changes.
+ *
+ * ====================================================================
+ * COMPARISON TABLE: Provider Contracts
+ * ====================================================================
+ * Feature                 | transactional_query   | transactional_interface | analytical_query
+ * ------------------------|-----------------------|-------------------------|--------------------------
+ * Primary use case        | Fiori / RAP UI        | RAP BO interface layer  | Analytics / SAC
+ * OData exposure          | Yes                   | Yes (via service binding)| No (InA protocol only)
+ * Direct SQL access       | Yes                   | Yes                     | No (InA only)
+ * Root view               | Usually root          | Usually non-root        | N/A
+ * Association propagation | From source           | From source             | From source
+ * New associations        | No                    | No                      | No
+ * Release contract        | @AbapCatalog.interface| @AbapCatalog.interface  | @AbapCatalog.interface
+ * SAP Analytics Cloud     | No                    | No                      | Yes
+ * RAP BO consumption      | Yes (draft-enabled)   | Yes (interface)         | No
+ * Kernel version          | 7.83+                 | 7.83+                   | 7.83+
+ *
+ * ====================================================================
+ * SOURCE CODE: Transactional Query Projection (Fiori / RAP)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Projection for Fiori UI'
+@AccessControl.authorizationCheck: #CHECK
+@AbapCatalog.interface: {
+  releaseState: #RELEASED_FOR_CUSTOMER_C0,
+  releaseContract: #EXTENSION_CONTRACT
+}
+@Search.searchable: true
+define root view entity ZPRAC_C_TRAVEL
+  as projection on /DMO/PRAC_CDS_TRAVEL_ENTITY
+  provider contract transactional_query
+{
+  key travel_id            as TravelID,
+      agency_id            as AgencyID,
+      customer_id          as CustomerID,
+      begin_date           as BeginDate,
+      end_date             as EndDate,
+      booking_fee          as BookingFee,
+      total_price          as TotalPrice,
+      currency_code        as CurrencyCode,
+      description          as Description,
+      overall_status       as OverallStatus,
+
+      /* Associations — propagated from source */
+      _Agency,
+      _Customer,
+      _Booking
+}
+
+/*
+ * ====================================================================
+ * SOURCE CODE: Transactional Interface Projection
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Interface for RAP Consumption'
+@AccessControl.authorizationCheck: #CHECK
+@AbapCatalog.interface: {
+  releaseState: #RELEASED_FOR_CUSTOMER_C0,
+  releaseContract: #INTERFACE_CONTRACT
+}
+define view entity ZPRAC_I_TRAVEL
+  as projection on /DMO/PRAC_CDS_TRAVEL_ENTITY
+  provider contract transactional_interface
+{
+  key travel_id            as TravelID,
+      customer_id          as CustomerID,
+      booking_fee          as BookingFee,
+      total_price          as TotalPrice,
+      currency_code        as CurrencyCode,
+      overall_status       as OverallStatus,
+
+      _Booking
+}
+
+/*
+ * ====================================================================
+ * SOURCE CODE: Analytical Query Projection (reference syntax)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Analytics Projection'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+define view entity ZPRAC_C_TRAVEL_ANALYTICS
+  as projection on /DMO/PRAC_CDS_TRAVEL_CUBE
+  provider contract analytical_query
+{
+  key travel_id            as TravelID,
+      agency_id            as AgencyID,
+      booking_fee          as BookingFee,
+      total_price          as TotalPrice,
+      currency_code        as CurrencyCode,
+      number_of_bookings   as NumberOfBookings
+}

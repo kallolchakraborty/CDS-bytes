@@ -1,0 +1,88 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_TEXT_ASSOC
+ * PURPOSE : Text Associations — Language-dependent descriptions using @ObjectModel.text.association
+ * TOPIC   : Text associations for multilingual data in S/4HANA
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Text associations follow the _Text naming convention (e.g., _Text, _DescriptionText)
+ *      and return language-dependent text data alongside the main entity.
+ *   2. A text provider view (like I_CurrencyText) exposes language key (spras / language)
+ *      and one or more text fields; it acts as the text source for the association.
+ *   3. The annotation @ObjectModel.text.association: '_Text' on the consumer CDS view
+ *      tells the OData runtime to expose the description as a structured annotation.
+ *   4. Within the text provider, the text field is flagged with @Semantics.text: true
+ *      to mark which field carries the actual description text.
+ *   5. When the consumer view is exposed, the description appears automatically as
+ *      a property in the OData metadata — the UI does not need to resolve the association.
+ *   6. Only the first text element of the provider (based on language priority) is used;
+ *      additional text fields are ignored for the @ObjectModel.text.association contract.
+ *
+ * ====================================================================
+ * COMPARISON: Text Association vs Direct Join to Text Table
+ * ====================================================================
+ *  Aspect                  | Text Association (@ObjectModel.text.association)
+ * --------------------------------------------------------------------------
+ *  Join syntax             | None — implicit via annotation
+ *  Multiple languages      | Automatic — language context resolved at runtime
+ *  OData exposure          | Single property in metadata (auto)
+ *  Code pushdown           | Yes (fully database)
+ *  Coupling to provider    | Decoupled — swap provider without changing consumers
+ *  Use case                | Standard multilingual descriptions (currency, material, etc.)
+ * --------------------------------------------------------------------------
+ *  Aspect                  | Direct Join to Text Table (manual _Text join)
+ * --------------------------------------------------------------------------
+ *  Join syntax             | Explicit LEFT OUTER JOIN with language filter
+ *  Multiple languages      | Requires explicit WHERE spras = sy-langu
+ *  OData exposure          | Separate navigation property
+ *  Code pushdown           | Yes (fully database)
+ *  Coupling to provider    | Tight — consumer depends on text table structure
+ *  Use case                | Custom joins or when annotation model cannot be used
+ * ====================================================================
+ *
+ * ====================================================================
+ * CDS — Text Provider View (currency text)
+ * ====================================================================
+
+@EndUserText.label: 'Currency Text Provider'
+@VDM.viewType: #HELP
+define view ZPRAC_CDS_CurrencyTextProvider
+  as select from i_currencytext
+{
+  key currency     as Currency,
+  key language     as Language,
+      currencyname as CurrencyName
+}
+where language = $session.system_language
+
+/*
+ * ====================================================================
+ * CDS — Consumer View using Text Association
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel with Currency Description'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+
+@ObjectModel.text.association: '_CurrencyText'
+
+define view ZPRAC_CDS_TravelWithCurrency
+  as select from /dmo/travel  as Travel
+  association [0..*] to ZPRAC_CDS_CurrencyTextProvider as _CurrencyText
+    on _CurrencyText.Currency = Travel.currency_code
+{
+  key travel_id           as TravelId,
+      agency_id           as AgencyId,
+      customer_id         as CustomerId,
+      begin_date          as BeginDate,
+      end_date            as EndDate,
+      booking_fee         as BookingFee,
+      total_price         as TotalPrice,
+      currency_code       as CurrencyCode,
+      description         as Description,
+      status              as Status,
+
+      /* Association — consumed automatically by OData for @ObjectModel.text.association */
+      _CurrencyText
+}

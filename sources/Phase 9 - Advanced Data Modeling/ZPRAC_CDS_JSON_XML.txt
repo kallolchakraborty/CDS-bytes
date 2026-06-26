@@ -1,0 +1,132 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_JSON_XML
+ * PURPOSE : CDS JSON & XML Functions — Data serialization and transformation
+ * TOPIC   : JSON, XML, serialization, deserialization in CDS views
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. CDS provides built-in functions to serialize entity data into JSON
+ *      or XML format directly within the view definition.
+ *   2. `with column format json` in the SELECT list serialises a column
+ *      value as JSON — useful for storing complex data in a single field.
+ *   3. `with column format xml` serialises a column value as XML — used
+ *      for backward-compatible integration with older SOAP services.
+ *   4. `JSON_VALUE( source_column, '$.path' )` extracts a scalar value
+ *      from a JSON string; `JSON_TABLE` (via AMDP) expands JSON arrays
+ *      into tabular form.
+ *   5. `XMLTABLE` inside AMDP transforms XML documents into relational
+ *      rows (requires HANA XML functions).
+ *   6. CDS views can consume JSON/XML via association to custom entities
+ *      or table functions that handle the parsing logic in ABAP/AMDP.
+ *   7. Semantic annotations like `@Semantics.json.enabled: true` flag
+ *      CDS elements for JSON serialization in OData V4 responses.
+ *
+ * ====================================================================
+ * COMPARISON: JSON vs XML in CDS
+ * ====================================================================
+ *  Aspect              | JSON Function              | XML Function
+ * ---------------------------------------------------------------------------------------------------------
+ *  Serialize to format | `with column format json`  | `with column format xml`
+ *  OData V4 support    | Native (JSON as default)   | Legacy (SOAP / OData V2)
+ *  Parse / extract     | `JSON_VALUE` expression    | `XMLTABLE` in AMDP
+ *  Array expansion     | JSON_TABLE in HANA AMDP    | XMLTABLE in HANA AMDP
+ *  Annotation          | @Semantics.json.enabled    | @Semantics.xml.enabled
+ *  Integration use     | REST / Fiori / Node.js     | SOAP / PI / Legacy ECC
+ *  Performance         | Fast (native HANA JSON)    | Moderate (XPath parsing)
+ * ====================================================================
+ */
+/*
+ * ====================================================================
+ * CDS — View with JSON Column Format
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Practice CDS — JSON Serialization'
+define view ZPRAC_CDS_JSON_SAMPLE
+  as select from /demo/cds_json_source
+{
+  key id            as SourceId,
+      payload       as OriginalPayload,
+      with column format json:
+        original_payload as JsonPayload
+}
+where id = 'SAMPLE_001'
+
+/*
+ * ====================================================================
+ * CDS — Extracting JSON Value with JSON_VALUE
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Practice CDS — JSON Value Extraction'
+define view ZPRAC_CDS_JSON_EXTRACT
+  as select from ZPRAC_CDS_JSON_SAMPLE
+{
+  key SourceId,
+      JsonPayload,
+      JSON_VALUE( JsonPayload, '$.customer.name' )
+        as CustomerName,
+      JSON_VALUE( JsonPayload, '$.order.total' )
+        as OrderTotal
+}
+
+/*
+ * ====================================================================
+ * CDS — View with XML Column Format
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Practice CDS — XML Serialization'
+define view ZPRAC_CDS_XML_SAMPLE
+  as select from /demo/cds_xml_source
+{
+  key doc_id          as DocumentId,
+      content         as RawContent,
+      with column format xml:
+        content       as XmlContent
+}
+
+/*
+ * ====================================================================
+ * CDS — Custom Entity for API Payload Parsing
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Practice CDS — JSON Payload Custom Entity'
+@ObjectModel.query.implementedBy: 'ABAP:ZCL_PRAC_JSON_PARSER'
+
+define custom entity ZPRAC_CDS_JsonPayload
+{
+  key payload_id : abap.char(36);
+      source     : abap.char(20);
+      json_body  : abap.string;
+}
+
+/*
+ * ====================================================================
+ * ABAP — JSON Parser in Custom Entity Implementation
+ * ====================================================================
+ */
+
+CLASS zcl_prac_json_parser DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES if_rap_query_provider.
+ENDCLASS.
+
+CLASS zcl_prac_json_parser IMPLEMENTATION.
+
+  METHOD if_rap_query_provider~select.
+    " Fetch raw JSON from external API (simulated)
+    DATA(raw_json) = |{ "items": [{ "id": "1", "name": "A" }] }|.
+
+    " Parse JSON using ABAP JSON library
+    DATA(json_reader) = cl_abap_json=>create_with_parsing( raw_json ).
+    DATA(parsed_data) = VALUE ztab_json_items( ).
+    json_reader->to_abap( IMPORTING data = parsed_data ).
+
+    io_response->set_data( REF #( parsed_data ) ).
+    io_response->set_total_number_of_records( lines( parsed_data ) ).
+  ENDMETHOD.
+
+ENDCLASS.

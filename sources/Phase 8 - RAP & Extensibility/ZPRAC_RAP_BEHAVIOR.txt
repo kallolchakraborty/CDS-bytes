@@ -1,0 +1,87 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_RAP_BEHAVIOR
+ * SQL VIEW: ZPRAC_SQL_RAPBH
+ * PURPOSE : RAP Behavior Definition — Defining transactional behavior for CDS-based business objects
+ * TOPIC   : ABAP RESTful Application Programming Model — Behavior Definition
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Behavior definition (BDEF) is the RAP contract — it defines
+ *      what operations (CRUD, actions, validations) are allowed on
+ *      a CDS view entity and how they behave
+ *   2. Managed implementation: the RAP framework generates all
+ *      save/update/delete logic automatically; unmanaged requires
+ *      manual implementation in a handler class for full control
+ *   3. `with draft` enables draft-capable transactional UIs —
+ *      users can save incomplete changes before publishing (activate)
+ *   4. CRUD operations (create / update / delete) are declared per
+ *      node; if omitted, the operation is not allowed
+ *   5. `implementation in class ZCL_... unique` binds the behavior
+ *      to a pool class with handler methods for custom logic
+ *   6. Validations check data consistency before save (e.g., dates,
+ *      mandatory fields); determinations auto-execute on triggers
+ *      (e.g., set status on create)
+ *   7. Actions are custom operations: instance actions operate on
+ *      a single entity (e.g., acceptBooking), static actions on
+ *      the whole set (e.g., bulkArchive)
+ *   8. `strict ( 2 )` enforces modern RAP rules (cloud-readiness,
+ *      no obsolete statements, mandatory field controls)
+ *
+ * KEY RULES — RAP BDEF Requirements:
+ *   ┌───────────────────────────────────┬─────────────────────────────────┐
+ *   │ Rule                              │ Description                     │
+ *   ├───────────────────────────────────┼─────────────────────────────────┤
+ *   │ Root entity must have a           │ persistent table /dmo/...     │
+ *   │ persistent table assigned         │                                 │
+ *   │ Child entities must use           │ lock dependent by _Parent      │
+ *   │ lock dependent                    │                                 │
+ *   │ authorization master (instance)   │ Enables instance-based auth     │
+ *   │ on root node                      │                                 │
+ *   │ field ( readonly : update )       │ Protect fields from change      │
+ *   │ for admin fields (CreatedBy, …)   │ after creation                  │
+ *   │ field ( mandatory ) for required  │ Enforces not-null on create     │
+ *   │ business fields                   │                                 │
+ *   │ mapping for ... { ... }           │ Maps CDS field names to DB cols │
+ *   │                                   │                                 │
+ *   │ Strict(2) is MANDATORY for        │ Required for cloud / SAP BTP    │
+ *   │ cloud-ready RAP BOs               │                                 │
+ *   └───────────────────────────────────┴─────────────────────────────────┘
+ * ====================================================================
+ * DIAGRAM: assets/diagrams/rap-arch.svg
+ */
+managed implementation in class ZCL_RAP_TRAVEL unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZPRAC_CDS_VIEW_ENTITY alias Travel
+persistent table /dmo/travel
+lock master
+authorization master ( instance )
+{
+  field ( readonly : update ) TravelId, Createdby, Createdat;
+  field ( mandatory ) AgencyId, CustomerId, BeginDate, EndDate;
+  create;
+  update;
+  delete;
+
+  action ( features : instance ) acceptBooking result [1] $self;
+
+  mapping for /dmo/travel
+  {
+    TravelId = travel_id;
+    AgencyId = agency_id;
+    CustomerId = customer_id;
+    BeginDate = begin_date;
+    EndDate = end_date;
+  }
+}
+
+define behavior for ZPRAC_CDS_ASSOCIATION alias Booking
+persistent table /dmo/booking
+lock dependent by _Travel
+{
+  update;
+  delete;
+  association _Travel;
+}

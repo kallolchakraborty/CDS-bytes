@@ -1,0 +1,88 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_ANALYTICAL_V3
+ * PURPOSE : CDS Analytical Projection Views (V3) — Modern analytical
+ *           queries with InA protocol
+ * TOPIC   : provider contract analytical_query
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. V3 analytical queries use define view entity as projection on
+ *      with the provider contract analytical_query clause (kernel 7.83+)
+ *      — they replace the older @Analytics.query: #TRUE approach.
+ *   2. A V3 analytical projection MUST be built on a cube view
+ *      (@Analytics.dataCategory: #CUBE); the underlying cube provides
+ *      the measures and dimensions that the projection selects.
+ *   3. Consumption happens exclusively via the InA (Information Access)
+ *      protocol — direct SQL reading or Open SQL FROM is NOT allowed.
+ *      Tools: SAP Analytics Cloud, Analysis for Office, custom InA
+ *      consumers.
+ *   4. Restricted measures use @Aggregation.default: #FORMULA combined
+ *      with the expression element syntax to define calculated key
+ *      figures (e.g., ratio, profit margin, year-over-year change).
+ *   5. Calculated quantities are annotated with @Semantics.quantity
+ *      and @Semantics.quantity.unitOfMeasure to ensure correct unit
+ *      handling across aggregation boundaries.
+ *   6. Compared to legacy @Analytics.query, V3 provides stronger
+ *      compile-time checks (e.g., verifying that only measures from
+ *      the cube are exposed, proper aggregation definitions, and
+ *      correct InA metadata generation).
+ *
+ * ====================================================================
+ * COMPARISON: Legacy Analytical Query vs V3 Analytical Projection View
+ * ====================================================================
+ * Feature              | Legacy @Analytics.query      | V3 analytical_query projection
+ * ---------------------|------------------------------|----------------------------------
+ * Syntax               | define view + annotation     | define view entity as projection on
+ * Provider contract    | None (implicit)              | provider contract analytical_query
+ * Base object          | Any CDS view or cube         | Must be a cube view (#CUBE)
+ * SQL access allowed?  | Yes                          | No (InA protocol only)
+ * Measure restriction  | Manual filtering             | #FORMULA + expression syntax
+ * Compile-time checks  | Minimal                      | Strict (measures, aggregations, InA)
+ * Transport layer      | Standard CDS transport       | Standard CDS transport
+ * SAP Analytics Cloud  | Yes (via InA/OData)          | Yes (native InA)
+ * ADT support          | Code completion limited      | Full syntax check in ADT
+ * Future-proofing      | Deprecated (still supported) | Recommended for new development
+ *
+ * ====================================================================
+ * SOURCE CODE: V3 Analytical Projection View
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Analytics V3 Projection'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@AbapCatalog.interface: {
+  releaseState: #RELEASED_FOR_CUSTOMER_C0,
+  releaseContract: #ANALYTICAL_CONTRACT
+}
+define view entity /DMO/PRAC_V3_TRAVEL_ANALYTICS
+  as projection on /DMO/PRAC_CUBE_TRAVEL
+  provider contract analytical_query
+{
+  key TravelID,
+      AgencyID,
+      CustomerID,
+      BeginDate,
+      EndDate,
+      OverallStatus,
+
+      /* Exposed measures from the cube — aggregation inherited from cube */
+      BookingFee,
+      TotalPrice,
+      CurrencyCode,
+
+      /* Restricted measure: only bookings with status 'A' (accepted) */
+      @Aggregation.default: #FORMULA
+      @EndUserText.label: 'Accepted Booking Count'
+      NumberOfBookings,
+
+      /* Calculated quantity with unit of measure */
+      @Semantics.quantity.unitOfMeasure: 'CurrencyCode'
+      @Aggregation.default: #SUM
+      @EndUserText.label: 'Weighted Booking Fee'
+      BookingFee as WeightedBookingFee,
+
+      /* Associations propagated from the cube */
+      _Agency,
+      _Customer
+}

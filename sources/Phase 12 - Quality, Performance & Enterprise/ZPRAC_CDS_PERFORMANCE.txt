@@ -1,0 +1,131 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_PERFORMANCE
+ * PURPOSE : CDS Performance Optimization — Query planning, buffering,
+ *           push-down patterns, and common pitfalls
+ * TOPIC   : Performance best practices for CDS views in production
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. @AbapCatalog.compiler.compareFilter: true enables filter push-down
+ *      to HANA for WHERE conditions matching view parameters — without it,
+ *      filters are applied on the application server after all data arrives.
+ *   2. Push-down principle: compute aggregation, filtering, and projection
+ *      in HANA, never on the ABAP application server. A CDS view is a
+ *      declarative SQL specification; the ABAP compiler decides the
+ *      execution location — annotations guide that decision.
+ *   3. Nested views inflate query plans exponentially — the SQL merger
+ *      flattens up to ~300 levels, but each nesting adds plan complexity.
+ *      Prefer CDS view entities over deprecated CDS DDIC-based views.
+ *   4. @AbortCatalog.preserveKey prevents the compiler from removing
+ *      key fields during SQL merger — essential when keys are needed
+ *      by the consumer (e.g., OData) but pruned as unused by the planner.
+ *   5. Parameterized views (@ParameterSystem) enable partition pruning.
+ *      Pass filter values as parameters so HANA eliminates irrelevant
+ *      partitions before scanning.
+ *   6. Index coverage is critical for large tables — ensure secondary
+ *      indexes exist for SELECT fields used in WHERE and JOIN conditions.
+ *      Check HANA PlanViz for full-table scans.
+ *   7. The N+1 anti-pattern occurs when associations are evaluated lazily
+ *      in a loop. Use @Environment.systemField or explicit JOIN to
+ *      materialize associations in a single query.
+ *   8. Decision guide: CDS is declarative — use it for data retrieval and
+ *      simple calculations. Use AMDP (ABAP Managed Database Procedures)
+ *      for imperative logic, complex transformations, or when you need
+ *      database-procedure features unavailable in CDS.
+ *
+ * BEFORE/AFTER COMPARISON
+ * --------------------------------------------------------------------
+ *  BEFORE — Poorly written view (SELECT *, no filter push-down)
+ * --------------------------------------------------------------------
+ *  define view ZPRAC_TRAVEL_BEFORE
+ *    as select from /dmo/travel
+ *  { * }   // SELECT * pulls all columns into app server memory
+ *  // No compareFilter → WHERE is applied in ABAP, not HANA
+ *  // No parameterization → full table scan on every call
+ *
+ * --------------------------------------------------------------------
+ *  AFTER — Optimized view with compareFilter, parameters, explicit fields
+ * --------------------------------------------------------------------
+ *  define root view entity ZPRAC_TRAVEL_AFTER
+ *    as select from /dmo/travel
+ *    composition [0..*] of /dmo/booking as _Booking
+ *      on $projection.travel_id = _Booking.travel_id
+ *  {
+ *      key travel_id,
+ *          agency_id,
+ *          customer_id,
+ *          @Semantics.amount.currencyCode: 'currency_code'
+ *          total_price,
+ *          currency_code,
+ *          status,
+ *          created_by,
+ *          created_at
+ *  }
+ *
+ * ====================================================================
+ * OPTIMIZED CDS VIEW — PRODUCTION-READY
+ * ====================================================================
+ */
+define root view entity ZPRAC_TRAVEL_OPTIMIZED
+  with parameters
+    @Environment.systemField: #CLIENT
+    p_mandt       : /dmo/travel.mandt,
+    p_status      : /dmo/travel.status,
+    p_min_price   : /dmo/travel.total_price
+  as select from /dmo/travel
+  where       mandt      = $parameters.p_mandt
+          and status    = $parameters.p_status
+          and total_price >= $parameters.p_min_price
+{
+  key travel_id,
+      agency_id,
+      customer_id,
+      @EndUserText.label: 'Total Price'
+      @Semantics.amount.currencyCode: 'currency_code'
+      total_price,
+      currency_code,
+      status,
+      created_by,
+      @EndUserText.label: 'Created At'
+      created_at,
+
+      /* Association for lazy consumption — consumer decides */
+      _Booking
+}
+// Explicit annotations for query-plan optimization:
+@AbapCatalog.compiler.compareFilter: true
+@AbapCatalog.preserveKey: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Optimized Travel View with Filter Push-Down'
+@AbapCatalog.sqlViewName: 'ZTRAVELOPT'
+@OData.publish: true
+
+/*
+ * ====================================================================
+ * 10 PERFORMANCE RULES FOR CDS VIEWS
+ * ====================================================================
+ *
+ *  #  Rule
+ * --- ---------------------------------------------------------------
+ *  1  NEVER use SELECT * — always list explicit fields.
+ *  2  ALWAYS set @AbapCatalog.compiler.compareFilter: true when view
+ *     has parameters and WHERE conditions on those parameters.
+ *  3  FAVOR CDS view entities (define root view entity) over deprecated
+ *     define view — entities give the compiler more optimization room.
+ *  4  KEEP nesting depth below 10 levels; beyond that, inspect the
+ *     SQL merger plan in ST05 or HANA PlanViz.
+ *  5  USE parameters for filters that vary at runtime — this enables
+ *     HANA partition pruning and plan stability.
+ *  6  AVOID associations in loops — materialize with JOIN when all
+ *     child data is needed for every parent row.
+ *  7  ANNOTATE @AbapCatalog.preserveKey: true if consumer (OData,
+ *     BOPF, RAP) requires keys that the planner might prune.
+ *  8  CHOOSE CDS for declarative data retrieval; choose AMDP for
+ *     imperative database logic (loops, complex transforms).
+ *  9  ENSURE secondary indexes cover WHERE, JOIN, and ORDER BY fields
+ *     on large tables — verify with HANA PlanViz.
+ * 10  MONITOR with ST05 (SQL trace), ST04 (HANA analysis), and
+ *     /IWXPF/RUNTIME_VIEW (CDS runtime statistics).
+ * ====================================================================
+ */

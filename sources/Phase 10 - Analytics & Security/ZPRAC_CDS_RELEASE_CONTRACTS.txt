@@ -1,0 +1,129 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_RELEASE_CONTRACTS
+ * PURPOSE : CDS Release Contracts & API Stability — C0, C1, C2, C3
+ *           for safe consumption and extension
+ * TOPIC   : Release contracts — API stability governance for CDS views
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Release contracts govern the stability and allowed consumption
+ *      scope of a released CDS view. They are defined via
+ *      @AbapCatalog.interface on the view, ensuring that consumers
+ *      can rely on the interface without unexpected breaking changes.
+ *   2. C0 (Extension Contract) — the view is released for customer
+ *      extensibility. Customers can append fields via CDS extension
+ *      includes. The contract guarantees that the extension points
+ *      remain stable across upgrades.
+ *   3. C1 (System-internal Use / API Contract) — the view is a stable
+ *      API for system-internal consumption. Other views or ABAP code
+ *      can depend on it. The interface is frozen; changes require
+ *      deprecation cycles.
+ *   4. C2 (Remote Consumption / Remote Contract) — the view is
+ *      released for remote access (OData, RFC, HTTP). The structure
+ *      and semantics are guaranteed for external-facing services.
+ *      Stronger stability guarantees than C1.
+ *   5. C3 (Configuration / Configuration Contract) — the view is
+ *      released for managed configuration content. Typically used for
+ *      customizing / configuration tables exposed through CDS.
+ *      Changes are possible but communicated.
+ *   6. @AbapCatalog.interface.releaseState can be #RELEASED_FOR_CUSTOMER
+ *      (visible to customers) or #RELEASED_FOR_CUSTOMER_C0 etc. to set
+ *      a specific contract. In ADT, the System Library view shows the
+ *      release contract and state for each released CDS artifact.
+ *   7. Visual indicators in ADT (green / yellow / red icons) show the
+ *      release status. Released views are protected against
+ *      incompatible changes during upgrade; contract violations are
+ *      flagged by the syntax checker and can block transport.
+ *
+ * ====================================================================
+ * COMPARISON TABLE: C0 — C3 Release Contracts
+ * ====================================================================
+ * Contract | Name                   | Use Case                     | Stability | Consumer Scope
+ * ---------|------------------------|------------------------------|-----------|------------------------------
+ * C0       | Extension Contract     | Customer extensions          | High      | Customers (extend fields)
+ * C1       | API Contract           | System-internal API          | Very High | Internal views / ABAP
+ * C2       | Remote Contract        | OData / RFC / HTTP services  | Highest   | Remote / external systems
+ * C3       | Configuration Contract | Configuration / customizing  | Medium    | Managed content consumers
+ *
+ * ====================================================================
+ * EXAMPLE: Releasing a CDS View with Extension Contract (C0)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel View released for Extension'
+@AccessControl.authorizationCheck: #CHECK
+@AbapCatalog.interface: {
+  releaseState: #RELEASED_FOR_CUSTOMER_C0,
+  releaseContract: #EXTENSION_CONTRACT
+}
+define view entity /DMO/PRAC_RELEASED_TRAVEL
+  as select from /DMO/travel
+{
+  key travel_id        as TravelID,
+      agency_id        as AgencyID,
+      customer_id      as CustomerID,
+      begin_date       as BeginDate,
+      end_date         as EndDate,
+      booking_fee      as BookingFee,
+      total_price      as TotalPrice,
+      currency_code    as CurrencyCode,
+      overall_status   as OverallStatus
+}
+
+/*
+ * ====================================================================
+ * EXAMPLE: Releasing a CDS View with Remote Contract (C2)
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Service for Remote OData Consumption'
+@AccessControl.authorizationCheck: #CHECK
+@AbapCatalog.interface: {
+  releaseState: #RELEASED_FOR_CUSTOMER,
+  releaseContract: #REMOTE_CONTRACT
+}
+define view entity /DMO/PRAC_REMOTE_TRAVEL
+  as select from /DMO/travel
+{
+  key travel_id        as TravelID,
+      agency_id        as AgencyID,
+      customer_id      as CustomerID,
+      total_price      as TotalPrice,
+      currency_code    as CurrencyCode,
+      overall_status   as OverallStatus
+}
+
+/*
+ * ====================================================================
+ * CHECKLIST: Releasing Custom CDS Views with Contracts
+ * ====================================================================
+ *
+ * Before releasing a CDS view, verify the following:
+ *
+ *   [ ] 1. Design is stable — no planned field renames or type changes
+ *   [ ] 2. Appropriate @AbapCatalog.interface.releaseState is chosen
+ *        (customer-internal // external)
+ *   [ ] 3. Appropriate releaseContract is chosen:
+ *        (EXTENSION_CONTRACT / API_CONTRACT / REMOTE_CONTRACT /
+ *         CONFIGURATION_CONTRACT)
+ *   [ ] 4. @EndUserText.label describes the purpose clearly and
+ *        concisely
+ *   [ ] 5. @AccessControl.authorizationCheck is set to #CHECK or
+ *        #NOT_REQUIRED (never #NOT_ALLOWED for released views)
+ *   [ ] 6. All exposed fields use semantically meaningful names (aliases)
+ *   [ ] 7. Currency / unit fields have correct @Semantics annotations
+ *   [ ] 8. Aggregation annotations are present on all measures (if
+ *        analytical)
+ *   [ ] 9. Association cardinalities and on-conditions are correct
+ *   [ ] 10. The view does NOT expose internal fields (GUIDs, timestamps
+ *         without purpose)
+ *   [ ] 11. The view compiles with zero syntax errors and zero warnings
+ *   [ ] 12. Transport request captures all dependent CDS artifacts
+ *   [ ] 13. (For C2) Service binding test passes — OData metadata is
+ *        valid
+ *   [ ] 14. (For C0) Extension points are explicitly declared via
+ *        extension include additions if needed
+ *   [ ] 15. ADT System Library shows the expected release contract and
+ *        state after activation
+ */

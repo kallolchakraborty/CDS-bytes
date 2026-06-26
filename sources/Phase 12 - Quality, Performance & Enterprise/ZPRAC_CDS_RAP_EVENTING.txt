@@ -1,0 +1,229 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_RAP_EVENTING
+ * PURPOSE : RAP Business Events & Enterprise Eventing — Event-driven
+ *           architecture with CDS and RAP
+ * TOPIC   : RAISE ENTITY EVENT, event binding, event mesh, derived events
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. Define events in the behavior definition (BDEF) with
+ *      `define event` — each event carries a typed parameter structure
+ *      (CDS abstract entity) that defines the payload contract.
+ *   2. `RAISE ENTITY EVENT FROM` in the behavior pool (ABAP class)
+ *      fires the event during the save sequence (FOR SAVE, FOR MODIFY).
+ *      The event is queued and delivered asynchronously after COMMIT.
+ *   3. Event binding maps a RAP business event to a topic in SAP Event
+ *      Mesh via the /IWXBE framework — configured in transaction
+ *      /IWXBE/CONFIG or via the `generate event binding` ADT wizard.
+ *   4. Derived events use a CDS view as the event payload, enabling
+ *      custom projections and filtering before the event reaches
+ *      subscribers — e.g. only emit events for status = 'B'.
+ *   5. Local event handlers use CL_ABAP_BEHAVIOR_EVENT_HANDLER as
+ *      the base class. Implement IF_ABAP_BEHAVIOR_EVENT_HANDLER~ON_
+ *      to react to events within the same system.
+ *   6. SAP Event Mesh integration: the RAP event is published to an
+ *      Event Mesh queue/topic; external consumers subscribe via AMQP
+ *      1.0 or HTTP webhooks. Configure QoS 0/1 as needed.
+ *   7. Monitor events via /IWXBE/MONITOR and /IWXBE/LOG — track
+ *      event status (CREATED, PUBLISHED, ERROR) and payload content
+ *      for debugging.
+ *
+ * ====================================================================
+ * FLOW DIAGRAM — CDS → RAP BO → Event → Event Mesh → Consumer
+ * ====================================================================
+ *
+ *  +------------+     +-----------+     +----------+     +------------+
+ *  |  CDS View  | --> |  RAP BO   | --> |  Event   | --> | SAP Event  |
+ *  | (Data def) |     | (Behavior)|     |  (Rise)  |     |   Mesh     |
+ *  +------------+     +-----------+     +----------+     +------------+
+ *       |                  |                 |                  |
+ *   define view      behavior              RAISE             Topic/
+ *   entity /dmo/     definition            ENTITY            Queue
+ *   travel           for                   EVENT             (AMQP)
+ *                    Travel
+ *                    { event
+ *                      TravelCreated
+ *                      param ...; }
+ *       |                  |                 |                  |
+ *       v                  v                 v                  v
+ *  +------------+     +-----------+     +----------+     +------------+
+ *  | Derived    |     | Behavior  |     | Event    |     | Consumer   |
+ *  | Event View |     | Pool      |     | Binding  |     | (Ext. Sys)|
+ *  | (CDS)      |     | (ABAP     |     | (/IWXBE) |     | Webhook / |
+ *  |            |     |  Class)   |     |          |     | AMQP      |
+ *  +------------+     +-----------+     +----------+     +------------+
+ *
+ *  Flow steps:
+ *    1. CDS view provides data model.
+ *    2. RAP BO processes business logic (MODIFY, SAVE).
+ *    3. Behavior pool raises entity event on state change.
+ *    4. Event binding maps event to Event Mesh topic.
+ *    5. Event Mesh delivers message to external consumer.
+ *
+ * ====================================================================
+ * BEHAVIOR DEFINITION (BDEF)
+ * ====================================================================
+ */
+define behavior for ZPRAC_TRAVEL_OPTIMIZED alias Travel
+implementation in class zcl_bp_travel_eventing unique
+persistent table /dmo/travel
+lock master
+authorization master ( global )
+
+{
+  /* ---- Standard RAP operations ---- */
+  create;
+  update;
+  delete;
+
+  /* ---- Business event ---- */
+  event TravelCreated     param ZPRAC_ABST_TRAVEL_EVENT;
+  event TravelBooked      param ZPRAC_ABST_TRAVEL_EVENT;
+  event TravelCancelled   param ZPRAC_ABST_TRAVEL_EVENT;
+
+  /* ---- Save sequence ---- */
+  mapping for /dmo/travel
+  {
+    TravelID    = travel_id;
+    AgencyID    = agency_id;
+    CustomerID  = customer_id;
+    TotalPrice  = total_price;
+    Currency    = currency_code;
+    Status      = status;
+  }
+}
+
+/*
+ * ====================================================================
+ * ABSTRACT ENTITY — EVENT PARAMETER STRUCTURE
+ * ====================================================================
+ */
+define abstract entity ZPRAC_ABST_TRAVEL_EVENT
+{
+  TravelID    : /dmo/travel_id;
+  AgencyID    : /dmo/agency_id;
+  CustomerID  : /dmo/customer_id;
+  TotalPrice  : /dmo/total_price;
+  Currency    : /dmo/currency_code;
+  Status      : /dmo/status;
+  EventTime   : tzntstmpl;
+}
+
+/*
+ * ====================================================================
+ * BEHAVIOR POOL — ABAP CLASS WITH EVENT RAISING
+ * ====================================================================
+ */
+CLASS zcl_bp_travel_eventing DEFINITION
+  PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF ZPRAC_TRAVEL_OPTIMIZED.
+
+  PUBLIC SECTION.
+    " Save sequence methods
+    CLASS-METHODS:
+      save_modified FOR SAVE
+        IMPORTING
+          it_travel_create TYPE mapping OF ZPRAC_TRAVEL_OPTIMIZED\\Travel
+                            FOR CREATE Travel.
+
+ENDCLASS.
+
+
+CLASS zcl_bp_travel_eventing IMPLEMENTATION.
+
+  METHOD save_modified IMPORTING it_travel_create.
+
+    DATA:
+      ls_event_param TYPE ZPRAC_ABST_TRAVEL_EVENT,
+      lt_created     TYPE TABLE FOR BEHAVIOR OF ZPRAC_TRAVEL_OPTIMIZED\\Travel.
+
+    " Collect created travel instances
+    lt_created = CORRESPONDING #( it_travel_create ).
+    IF lt_created IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    " Loop over newly created records and raise event
+    LOOP AT lt_created ASSIGNING FIELD-SYMBOL(<fs_travel>).
+
+      " Fill event parameter structure
+      ls_event_param-TravelID   = <fs_travel>-TravelID.
+      ls_event_param-AgencyID   = <fs_travel>-AgencyID.
+      ls_event_param-CustomerID = <fs_travel>-CustomerID.
+      ls_event_param-TotalPrice = <fs_travel>-TotalPrice.
+      ls_event_param-Currency   = <fs_travel>-Currency.
+      ls_event_param-Status     = <fs_travel>-Status.
+      GET TIME STAMP FIELD ls_event_param-EventTime.
+
+      " Raise entity event — queued until COMMIT
+      RAISE ENTITY EVENT TravelCreated
+        FROM ZPRAC_TRAVEL_OPTIMIZED\\Travel
+        TRAVELID = <fs_travel>-TravelID
+        EVENT_PARAMETER ls_event_param.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
+/*
+ * ====================================================================
+ * LOCAL EVENT HANDLER — SAME-SYSTEM CONSUMER
+ * ====================================================================
+ */
+CLASS zcl_evh_travel_demo DEFINITION
+  PUBLIC ABSTRACT FINAL
+  FOR EVENTS OF ZPRAC_TRAVEL_OPTIMIZED.
+
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      on_travel_created
+        FOR EVENT TravelCreated OF ZPRAC_TRAVEL_OPTIMIZED
+        IMPORTING
+          travel_id
+          event_parameter.
+
+ENDCLASS.
+
+
+CLASS zcl_evh_travel_demo IMPLEMENTATION.
+
+  METHOD on_travel_created.
+    " Called after COMMIT when the event is dispatched locally
+    DATA(lv_msg) = |Travel { travel_id } created — logging to app log|.
+
+    " Write to application log
+    DATA lo_log TYPE REF TO if_application_log.
+    " ... logging logic ...
+
+    " Optionally trigger follow-on processing
+    " call_function 'Z_MY_FOLLOWUP' exporting iv_travel_id = travel_id.
+  ENDMETHOD.
+
+ENDCLASS.
+
+/*
+ * ====================================================================
+ * DERIVED EVENT VIEW — CUSTOM PAYLOAD via CDS
+ * ====================================================================
+ */
+define view entity ZPRAC_CDS_DERIVED_EVENT
+  as select from /dmo/travel
+  where status = 'B'   " Only booked travels — filter at source
+{
+  key travel_id      as TravelID,
+      customer_id    as CustomerID,
+      agency_id      as AgencyID,
+      total_price    as TotalPrice,
+      currency_code  as Currency,
+      status         as Status,
+      created_at     as EventTime
+}
+/*
+ *  Use this CDS view as the event parameter in the BDEF instead of the
+ *  abstract entity when you want a custom, filtered payload. Register
+ *  it in the event binding /IWXBE to publish directly to Event Mesh.
+ *
+ * ====================================================================
+ */

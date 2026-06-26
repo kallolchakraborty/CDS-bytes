@@ -1,0 +1,122 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_ANALYTICAL
+ * PURPOSE : Analytical CDS Views — Cube, Fact, and Dimension views
+ *           for reporting
+ * TOPIC   : @Analytics.dataCategory: #CUBE / #FACT / #DIMENSION
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. @Analytics.dataCategory classifies a CDS view into one of four
+ *      analytical roles: #CUBE, #FACT, #DIMENSION, or #QUERY — each
+ *      determines how the view is interpreted by analytical engines
+ *      (SAP Analytics Cloud, Analysis for Office, etc.).
+ *   2. A #CUBE view contains measures (quantifiable key figures) and
+ *      dimensions (characteristics); it is the primary data source for
+ *      analytical queries. Measures must be annotated with
+ *      @Aggregation.default to define how they are aggregated.
+ *   3. A #DIMENSION view provides master data / attributes (e.g., date,
+ *      product, customer) and is associated to a cube or fact view via
+ *      CDS associations. It contains no measures.
+ *   4. A #FACT view is a granular, transaction-level view that can feed
+ *      into cubes. The distinction from #CUBE is subtle: a #FACT view
+ *      typically has no pre-defined aggregations and exposes all
+ *      transactional detail; a #CUBE is the consumable analytical layer.
+ *   5. @Aggregation.default assigns the aggregation behavior for a
+ *      measure: #SUM, #MIN, #MAX, #COUNT, #AVG, #FORMULA (for calculated
+ *      measures), or #NONE (for dimensions / non-aggregatable fields).
+ *   6. Keyword dimensions (fields used for filtering / grouping) do not
+ *      get @Aggregation.default; they are implicitly grouped-on in SQL.
+ *      Association to dimension views is the recommended pattern for
+ *      enriching cube data with text / attributes.
+ *   7. @Analytics.query: #TRUE on a view creates a consumable analytical
+ *      query that can be exposed via InA / OData for reporting tools.
+ *      In modern S/4HANA, provider contract analytical_query is the
+ *      preferred successor (see ZPRAC_CDS_ANALYTICAL_V3).
+ *
+ * ====================================================================
+ * COMPARISON TABLE: Cube vs Fact vs Dimension vs Query
+ * ====================================================================
+ * Feature         | #CUBE            | #FACT             | #DIMENSION     | #QUERY
+ * ----------------|------------------|-------------------|----------------|-----------------------
+ * Measures        | Yes              | Yes               | No             | Yes (restricted)
+ * Aggregation     | Always defined   | Optional          | N/A            | Inherited / overridden
+ * Associations    | To dimensions    | To dimensions     | To other dims  | Based on cube/dim
+ * Consumption     | Analytics tools  | Cubes / queries   | Cubes, facts   | End-user reporting
+ * Text support    | Via association  | Via association   | Native         | Via association
+ * S/4HANA 2025+   | Supported        | Supported         | Supported      | Legacy (use V3)
+ * Example use     | Sales cube       | Sales line items  | Product / Date | Quarterly sales report
+ *
+ * ====================================================================
+ * SOURCE CODE: Dimension View
+ * ====================================================================
+ * DIAGRAM: assets/diagrams/analytical-cds.svg
+ */
+
+@EndUserText.label: 'Agency Dimension'
+@Analytics.dataCategory: #DIMENSION
+@AccessControl.authorizationCheck: #CHECK
+define view entity /DMO/PRAC_DIM_AGENCY
+  as select from /DMO/agency
+{
+  key agency_id as AgencyID,
+      agency_name as AgencyName,
+      street as Street,
+      city as City,
+      country as CountryCode
+}
+
+/*
+ * ====================================================================
+ * SOURCE CODE: Cube View
+ * ====================================================================
+ */
+
+@EndUserText.label: 'Travel Cube'
+@Analytics.dataCategory: #CUBE
+@AccessControl.authorizationCheck: #CHECK
+define view entity /DMO/PRAC_CUBE_TRAVEL
+  as select from /DMO/travel as T
+  inner join /DMO/booking as B
+    on B.travel_id = T.travel_id
+
+  association [0..1] to /DMO/PRAC_DIM_AGENCY as _Agency
+    on _Agency.AgencyID = T.agency_id
+
+  association [0..1] to /DMO/customer as _Customer
+    on _Customer.customer_id = T.customer_id
+{
+  key T.travel_id          as TravelID,
+      T.agency_id          as AgencyID,
+      T.customer_id        as CustomerID,
+      T.begin_date         as BeginDate,
+      T.end_date           as EndDate,
+      T.overall_status     as OverallStatus,
+
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      @Aggregation.default: #SUM
+      T.booking_fee        as BookingFee,
+
+      @Semantics.amount.currencyCode: 'CurrencyCode'
+      @Aggregation.default: #SUM
+      T.total_price        as TotalPrice,
+
+      @Semantics.currencyCode: true
+      T.currency_code      as CurrencyCode,
+
+      @Aggregation.default: #COUNT
+      B.travel_id          as NumberOfBookings,
+
+      _Agency,
+      _Customer
+}
+group by
+  T.travel_id,
+  T.agency_id,
+  T.customer_id,
+  T.begin_date,
+  T.end_date,
+  T.overall_status,
+  T.booking_fee,
+  T.total_price,
+  T.currency_code

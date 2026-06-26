@@ -1,0 +1,48 @@
+/*
+ * ====================================================================
+ * CDS VIEW: ZPRAC_CDS_INTRO
+ * SQL VIEW: ZPRAC_CDS_INTRO
+ * PURPOSE : CDS Overview & Tooling — ADT setup, package creation, CDS
+ *           DDL project structure, activation flow, data preview
+ * TOPIC   : Getting Started with ABAP CDS — prerequisites and workflow
+ * ====================================================================
+ *
+ * KEY LEARNING POINTS:
+ *   1. ADT (ABAP Development Tools) for Eclipse is mandatory — install
+ *      the ADT plugin and connect to an ABAP system (740 SP08+).
+ *   2. Create or use a transportable package (e.g. ZCDS_PRAC) to hold
+ *      all CDS artefacts.
+ *   3. Use the New > Data Definition wizard (Ctrl+N) → DDL Source →
+ *      choose a package and request a transport.
+ *   4. The CDS DDL editor provides syntax highlighting, code completion
+ *      (Ctrl+Space), and annotation proposals.
+ *   5. Activation (Ctrl+F3) creates the ABAP Dictionary SQL view and
+ *      the CDS entity in the system.
+ *   6. Use Data Preview (F8) on the activated CDS view to inspect data
+ *      without writing ABAP code.
+ *   7. Transports carry the DDL source; the SQL view is generated
+ *      automatically on target systems after import + activation.
+ *   8. The ABAP Flight Reference Scenario (/DMO/) provides demo tables
+ *      (travel, booking, customer, agency) shipped with every AS ABAP.
+ *
+ * USAGE IN ABAP:
+ *   DATA lt_travel TYPE STANDARD TABLE OF ZPRAC_CDS_INTRO.
+ *   SELECT * FROM ZPRAC_CDS_INTRO INTO TABLE @lt_travel UP TO 10 ROWS.
+ *   cl_demo_output=>display( lt_travel ).
+ *
+ * ====================================================================
+ */
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'CDS Intro — Hello World'
+define view entity ZPRAC_CDS_INTRO
+  as select from /dmo/travel
+{
+  key travel_id     as TravelId,
+      agency_id     as AgencyId,
+      customer_id   as CustomerId,
+      begin_date    as BeginDate,
+      end_date      as EndDate,
+      status        as Status,
+      total_price   as TotalPrice,
+      description   as Description
+}
