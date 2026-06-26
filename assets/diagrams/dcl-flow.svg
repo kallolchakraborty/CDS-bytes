@@ -1,64 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 420" font-family="'JetBrains Mono', 'Ubuntu', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="'Ubuntu', sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#E95420"/>
     </marker>
-    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M0,0 L10,5 L0,10 Z" fill="#EF4444"/>
-    </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#22C55E"/>
+    </marker>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#EF4444"/>
     </marker>
   </defs>
 
-  <text x="350" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#E95420">DCL — Access Control Flow</text>
+  <rect x="0" y="0" width="1000" height="55" fill="#E95420"/>
+  <text x="500" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#FFF">DCL — Access Control Flow</text>
 
-  <!-- User Request -->
-  <rect x="20" y="55" width="160" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
-  <text x="100" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#16A34A">User Request</text>
-  <text x="100" y="95" text-anchor="middle" font-size="9" fill="#64748b">(ABAP / OData)</text>
+  <!-- === FLOW DIAGRAM === -->
+  <text x="100" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#64748B">1. User Request</text>
+  <rect x="40" y="90" width="130" height="45" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="105" y="110" text-anchor="middle" font-size="10" fill="#16A34A">SAP User / OData</text>
+  <text x="105" y="125" text-anchor="middle" font-size="9" fill="#64748B">via Fiori or API</text>
 
-  <line x1="180" y1="80" x2="220" y2="80" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="170" y1="112" x2="210" y2="112" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- CDS View -->
-  <rect x="225" y="55" width="160" height="50" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
-  <text x="305" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#CA8A04">CDS View</text>
-  <text x="305" y="95" text-anchor="middle" font-size="9" fill="#64748b">@AccessControl.authorizationCheck</text>
+  <text x="290" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#64748B">2. CDS View Accessed</text>
+  <rect x="215" y="90" width="160" height="45" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
+  <text x="295" y="110" text-anchor="middle" font-size="10" fill="#CA8A04">CDS View Entity</text>
+  <text x="295" y="125" text-anchor="middle" font-size="9" fill="#64748B">@AccessControl.authorizationCheck</text>
 
-  <line x1="385" y1="80" x2="425" y2="80" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="375" y1="112" x2="415" y2="112" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- DCL Check -->
-  <rect x="430" y="55" width="200" height="50" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.5"/>
-  <text x="530" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#DC2626">DCL: Access Control</text>
-  <text x="530" y="95" text-anchor="middle" font-size="9" fill="#64748b">Define PCD / PFCG mapping</text>
+  <text x="500" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#64748B">3. DCL Security Check</text>
+  <rect x="420" y="90" width="170" height="45" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.5"/>
+  <text x="505" y="110" text-anchor="middle" font-size="10" fill="#DC2626">DCL: define role</text>
+  <text x="505" y="125" text-anchor="middle" font-size="9" fill="#64748B">PFCG → aspect mapping</text>
+
+  <line x1="590" y1="112" x2="630" y2="112" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- Decision diamond -->
-  <polygon points="350,145 430,185 350,225 270,185" fill="#EDE9FE" stroke="#A855F7" stroke-width="1.5"/>
-  <text x="350" y="189" text-anchor="middle" font-size="11" font-weight="bold" fill="#9333EA">Access</text>
-  <text x="350" y="203" text-anchor="middle" font-size="11" font-weight="bold" fill="#9333EA">Granted?</text>
+  <polygon points="715,67 800,112 715,157 630,112" fill="#EDE9FE" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="715" y="108" text-anchor="middle" font-size="10" font-weight="bold" fill="#9333EA">Access</text>
+  <text x="715" y="122" text-anchor="middle" font-size="10" font-weight="bold" fill="#9333EA">Granted?</text>
 
-  <line x1="350" y1="105" x2="350" y2="140" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- GRANTED -->
+  <line x1="800" y1="112" x2="870" y2="112" stroke="#22C55E" stroke-width="2" marker-end="url(#arr-g)"/>
+  <rect x="875" y="92" width="110" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="930" y="112" text-anchor="middle" font-size="10" font-weight="bold" fill="#16A34A">Data Returned</text>
+  <text x="930" y="126" text-anchor="middle" font-size="8" fill="#64748B">Row-filtered set</text>
 
-  <!-- Granted path -->
-  <line x1="430" y1="185" x2="550" y2="185" stroke="#22C55E" stroke-width="2" marker-end="url(#arrow-green)"/>
-  <rect x="555" y="165" width="140" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
-  <text x="625" y="182" text-anchor="middle" font-size="11" font-weight="bold" fill="#16A34A">Data Returned</text>
-  <text x="625" y="198" text-anchor="middle" font-size="9" fill="#64748b">Filtered set</text>
+  <!-- DENIED -->
+  <line x1="630" y1="157" x2="630" y2="200" stroke="#EF4444" stroke-width="2" marker-end="url(#arr-r)"/>
+  <rect x="565" y="205" width="130" height="40" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.5"/>
+  <text x="630" y="225" text-anchor="middle" font-size="10" font-weight="bold" fill="#DC2626">No Data / Suppressed</text>
 
-  <!-- Denied path -->
-  <line x1="270" y1="185" x2="160" y2="185" stroke="#EF4444" stroke-width="2" marker-end="url(#arrow-red)"/>
-  <rect x="20" y="165" width="135" height="40" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.5"/>
-  <text x="87" y="182" text-anchor="middle" font-size="11" font-weight="bold" fill="#DC2626">No Data</text>
-  <text x="87" y="198" text-anchor="middle" font-size="9" fill="#64748b">Empty / suppressed</text>
+  <!-- === DCL SYNTAX === -->
+  <rect x="40" y="270" width="450" height="190" rx="8" fill="#1E293B"/>
+  <text x="60" y="295" font-size="11" font-weight="bold" fill="#22C55E">DCL: define role Syntax</text>
 
-  <!-- DCL syntax example -->
-  <rect x="50" y="260" width="600" height="140" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
-  <text x="350" y="285" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">DCL Syntax Example</text>
+  <text x="60" y="318" font-size="9" fill="#94A3B8">@MappingRole: true</text>
+  <text x="60" y="335" font-size="9" fill="#94A3B8">@MappingRoleName: 'ZPRAC_TRAVEL_SALES'</text>
+  <text x="60" y="352" font-size="9" fill="#94A3B8">define role ZPRAC_TRAVEL_SALES {</text>
+  <text x="80" y="369" font-size="9" fill="#EAB308">  grant select on ZPRAC_CDS_SIMPLE</text>
+  <text x="100" y="386" font-size="9" fill="#94A3B8">  where (AgencyId) =</text>
+  <text x="100" y="403" font-size="9" fill="#94A3B8">    aspect pfcg_auth(</text>
+  <text x="120" y="420" font-size="9" fill="#94A3B8">  org_value, 'S_CARRID', 'ACTVT'</text>
+  <text x="100" y="437" font-size="9" fill="#94A3B8">  );</text>
+  <text x="60" y="454" font-size="9" fill="#94A3B8">}</text>
 
-  <text x="70" y="310" font-size="10" fill="#64748b">@MappingRole: true</text>
-  <text x="70" y="325" font-size="10" fill="#64748b">define role ZPRAC_TRAVEL_SALES {</text>
-  <text x="90" y="340" font-size="10" fill="#64748b">grant select on ZPRAC_CDS_SIMPLE</text>
-  <text x="110" y="355" font-size="10" fill="#64748b">where (AgencyId) = aspect pfcg_auth( org_value, 'S_CARRID', 'ACTVT' );</text>
-  <text x="70" y="370" font-size="10" fill="#64748b">}</text>
-  <text x="350" y="390" text-anchor="middle" font-size="9" fill="#64748b">PFCG authorization objects → ABAP roles → CDS row-level security</text>
+  <!-- DCL explanation -->
+  <rect x="510" y="270" width="450" height="190" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="530" y="295" font-size="11" font-weight="bold" fill="#1e293b">How DCL Works</text>
+  <line x1="530" y1="302" x2="940" y2="302" stroke="#E2E8F0" stroke-width="0.5"/>
+
+  <text x="530" y="322" font-size="10" fill="#1e293b"><tspan font-weight="bold" fill="#E95420">1.</tspan> User accesses a CDS view via OData / SE16</text>
+  <text x="530" y="342" font-size="10" fill="#1e293b"><tspan font-weight="bold" fill="#E95420">2.</tspan> CDS annotation <tspan font-weight="bold" fill="#E95420">@AccessControl.authorizationCheck: #CHECK</tspan></text>
+  <text x="530" y="362" font-size="10" fill="#1e293b"><tspan font-weight="bold" fill="#E95420">3.</tspan> DCL role is evaluated at runtime</text>
+  <text x="530" y="382" font-size="10" fill="#1e293b"><tspan font-weight="bold" fill="#E95420">4.</tspan> PFCG authorization object is checked</text>
+  <text x="530" y="402" font-size="10" fill="#1e293b"><tspan font-weight="bold" fill="#E95420">5.</tspan> If match → row is visible; otherwise → hidden</text>
+  <text x="530" y="427" font-size="10" fill="#64748B">S_CARRID = Authorization object for airline</text>
+  <text x="530" y="445" font-size="10" fill="#64748B">ACTVT = Activity (03=display, 02=change, 01=create)</text>
+
+  <!-- === ACCESS CONTROL MODES === -->
+  <rect x="40" y="480" width="920" height="140" rx="8" fill="#FFF3ED" stroke="#E95420" stroke-width="1"/>
+  <text x="500" y="505" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">@AccessControl.authorizationCheck — 3 Modes</text>
+  <line x1="60" y1="512" x2="940" y2="512" stroke="#E95420" stroke-width="0.5"/>
+
+  <rect x="60" y="525" width="280" height="80" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1"/>
+  <text x="200" y="547" text-anchor="middle" font-size="11" font-weight="bold" fill="#16A34A">#CHECK</text>
+  <text x="200" y="565" text-anchor="middle" font-size="9" fill="#1e293b">Default. DCL role is checked.</text>
+  <text x="200" y="583" text-anchor="middle" font-size="9" fill="#64748B">If no DCL exists → no data returned.</text>
+  <text x="200" y="598" text-anchor="middle" font-size="9" fill="#64748B">Use for most production views.</text>
+
+  <rect x="360" y="525" width="280" height="80" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1"/>
+  <text x="500" y="547" text-anchor="middle" font-size="11" font-weight="bold" fill="#CA8A04">#NOT_REQUIRED</text>
+  <text x="500" y="565" text-anchor="middle" font-size="9" fill="#1e293b">DCL role is NOT checked.</text>
+  <text x="500" y="583" text-anchor="middle" font-size="9" fill="#64748B">All users see all rows.</text>
+  <text x="500" y="598" text-anchor="middle" font-size="9" fill="#64748B">Use for tech / utility views only.</text>
+
+  <rect x="660" y="525" width="280" height="80" rx="6" fill="#EDE9FE" stroke="#A855F7" stroke-width="1"/>
+  <text x="800" y="547" text-anchor="middle" font-size="11" font-weight="bold" fill="#9333EA">#PRIVILEGED_ONLY</text>
+  <text x="800" y="565" text-anchor="middle" font-size="9" fill="#1e293b">Only DCL-defined users pass.</text>
+  <text x="800" y="583" text-anchor="middle" font-size="9" fill="#64748B">Restrictive — no default access.</text>
+  <text x="800" y="598" text-anchor="middle" font-size="9" fill="#64748B">Use for sensitive / financial data.</text>
+
+  <!-- PFCG mapping -->
+  <rect x="40" y="635" width="920" height="95" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="500" y="658" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">PFCG Authorization → DCL Mapping Pipeline</text>
+  <line x1="60" y1="665" x2="940" y2="665" stroke="#E2E8F0" stroke-width="0.5"/>
+
+  <rect x="60" y="678" width="160" height="40" rx="6" fill="#1E293B"/>
+  <text x="140" y="698" text-anchor="middle" font-size="10" fill="#FFF">PFCG Role</text>
+  <text x="140" y="711" text-anchor="middle" font-size="8" fill="#94A3B8">SAP Role assignment</text>
+
+  <line x1="220" y1="698" x2="260" y2="698" stroke="#E95420" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="265" y="678" width="160" height="40" rx="6" fill="#1E293B"/>
+  <text x="345" y="698" text-anchor="middle" font-size="10" fill="#FFF">Auth Object</text>
+  <text x="345" y="711" text-anchor="middle" font-size="8" fill="#94A3B8">S_CARRID, ACTVT</text>
+
+  <line x1="425" y1="698" x2="465" y2="698" stroke="#E95420" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="470" y="678" width="160" height="40" rx="6" fill="#1E293B"/>
+  <text x="550" y="698" text-anchor="middle" font-size="10" fill="#FFF">DCL: aspect</text>
+  <text x="550" y="711" text-anchor="middle" font-size="8" fill="#94A3B8">pfcg_auth() mapping</text>
+
+  <line x1="630" y1="698" x2="670" y2="698" stroke="#E95420" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="675" y="678" width="160" height="40" rx="6" fill="#1E293B"/>
+  <text x="755" y="698" text-anchor="middle" font-size="10" fill="#FFF">CDS Row Filter</text>
+  <text x="755" y="711" text-anchor="middle" font-size="8" fill="#94A3B8">WHERE clause injected</text>
+
+  <line x1="835" y1="698" x2="875" y2="698" stroke="#E95420" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="880" y="678" width="70" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1"/>
+  <text x="915" y="698" text-anchor="middle" font-size="10" fill="#16A34A">Data</text>
 </svg>

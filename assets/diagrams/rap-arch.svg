@@ -1,51 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="'JetBrains Mono', 'Ubuntu', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" font-family="'Ubuntu', sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#E95420"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3B82F6"/>
     </marker>
   </defs>
 
-  <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#E95420">RAP Architecture Layers</text>
+  <rect x="0" y="0" width="1000" height="55" fill="#E95420"/>
+  <text x="500" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#FFF">RAP Architecture — Full Stack Breakdown</text>
 
-  <!-- Layer stack - top to bottom reading, like ABAP -->
+  <!-- ============ LAYER 1: UI ============ -->
+  <rect x="40" y="70" width="920" height="55" rx="8" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+  <text x="65" y="93" font-size="14" font-weight="bold" fill="#16A34A">1. UI / Presentation Layer</text>
+  <text x="65" y="113" font-size="10" fill="#1e293b">SAP Fiori Elements · Freestyle UI5 · OData V4 Client · Web APIs</text>
 
-  <!-- UI / Fiori -->
-  <rect x="50" y="55" width="700" height="55" rx="8" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
-  <text x="400" y="78" text-anchor="middle" font-size="13" font-weight="bold" fill="#16A34A">UI Layer</text>
-  <text x="400" y="98" text-anchor="middle" font-size="10" fill="#166534">SAP Fiori / OData V4 UI / Business User</text>
+  <line x1="65" y1="125" x2="65" y2="155" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="85" y="145" font-size="9" fill="#E95420">OData V4 Request</text>
 
-  <line x1="400" y1="110" x2="400" y2="135" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- ============ LAYER 2: Service ============ -->
+  <rect x="40" y="160" width="920" height="60" rx="8" fill="#E0F2FE" stroke="#3B82F6" stroke-width="2"/>
+  <text x="65" y="183" font-size="14" font-weight="bold" fill="#2563EB">2. Service Layer</text>
+  <text x="65" y="200" font-size="10" fill="#1e293b">Service Definition → defines what entities are exposed</text>
+  <text x="65" y="215" font-size="9" fill="#64748B">Service Binding → binds to OData V4 UI or Web API protocol</text>
 
-  <!-- Service Layer -->
-  <rect x="50" y="140" width="700" height="55" rx="8" fill="#E0F2FE" stroke="#3B82F6" stroke-width="2"/>
-  <text x="400" y="163" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563EB">Service Layer</text>
-  <text x="400" y="183" text-anchor="middle" font-size="10" fill="#1E40AF">Service Definition → Service Binding → OData V4 API</text>
+  <line x1="65" y1="220" x2="65" y2="250" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="85" y="240" font-size="9" fill="#E95420">EML (Entity Manipulation Language)</text>
 
-  <line x1="400" y1="195" x2="400" y2="220" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- ============ LAYER 3: Behavior ============ -->
+  <rect x="40" y="255" width="920" height="85" rx="8" fill="#FEFCE8" stroke="#EAB308" stroke-width="2"/>
+  <text x="65" y="278" font-size="14" font-weight="bold" fill="#CA8A04">3. Behavior Layer</text>
 
-  <!-- Behavior Layer -->
-  <rect x="50" y="225" width="700" height="55" rx="8" fill="#FEFCE8" stroke="#EAB308" stroke-width="2"/>
-  <text x="400" y="248" text-anchor="middle" font-size="13" font-weight="bold" fill="#CA8A04">Behavior Layer</text>
-  <text x="400" y="268" text-anchor="middle" font-size="10" fill="#854D0E">Behavior Definition + Behavior Implementation (ABAP)</text>
+  <!-- Behavior operation boxes -->
+  <rect x="65" y="290" width="200" height="40" rx="4" fill="#FEF9C3" stroke="#EAB308" stroke-width="1"/>
+  <text x="165" y="308" text-anchor="middle" font-size="10" fill="#854D0E">Behavior Definition (BDEF)</text>
+  <text x="165" y="322" text-anchor="middle" font-size="8" fill="#64748B">create / update / delete</text>
 
-  <line x1="400" y1="280" x2="400" y2="305" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="285" y="290" width="200" height="40" rx="4" fill="#FEF9C3" stroke="#EAB308" stroke-width="1"/>
+  <text x="385" y="308" text-anchor="middle" font-size="10" fill="#854D0E">Behavior Implementation</text>
+  <text x="385" y="322" text-anchor="middle" font-size="8" fill="#64748B">ABAP class (local)</text>
 
-  <!-- Data Model Layer -->
-  <rect x="50" y="310" width="700" height="55" rx="8" fill="#FEF2F2" stroke="#EF4444" stroke-width="2"/>
-  <text x="400" y="333" text-anchor="middle" font-size="13" font-weight="bold" fill="#DC2626">Data Model Layer</text>
-  <text x="400" y="353" text-anchor="middle" font-size="10" fill="#991B1B">CDS View Entities / Projections + RAP BO</text>
+  <rect x="505" y="290" width="200" height="40" rx="4" fill="#FEF9C3" stroke="#EAB308" stroke-width="1"/>
+  <text x="605" y="308" text-anchor="middle" font-size="10" fill="#854D0E">Draft Handling</text>
+  <text x="605" y="322" text-anchor="middle" font-size="8" fill="#64748B">Draft tables (if active)</text>
 
-  <line x1="400" y1="365" x2="400" y2="390" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="725" y="290" width="200" height="40" rx="4" fill="#FEF9C3" stroke="#EAB308" stroke-width="1"/>
+  <text x="825" y="308" text-anchor="middle" font-size="10" fill="#854D0E">Authorization Control</text>
+  <text x="825" y="322" text-anchor="middle" font-size="8" fill="#64748B">%control / instance auth</text>
 
-  <!-- Database Layer -->
-  <rect x="50" y="395" width="700" height="55" rx="8" fill="#EDE9FE" stroke="#A855F7" stroke-width="2"/>
-  <text x="400" y="418" text-anchor="middle" font-size="13" font-weight="bold" fill="#9333EA">Database Layer</text>
-  <text x="400" y="438" text-anchor="middle" font-size="10" fill="#581C87">SAP HANA / DDIC Tables + AMDP / Table Functions</text>
+  <line x1="65" y1="340" x2="65" y2="370" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="85" y="360" font-size="9" fill="#E95420">reads from</text>
 
-  <!-- Side labels -->
-  <text x="15" y="85" font-size="9" fill="#64748b">🎨</text>
-  <text x="15" y="170" font-size="9" fill="#64748b">🔌</text>
-  <text x="15" y="255" font-size="9" fill="#64748b">🧠</text>
-  <text x="15" y="340" font-size="9" fill="#64748b">📊</text>
-  <text x="15" y="425" font-size="9" fill="#64748b">💾</text>
+  <!-- ============ LAYER 4: Data Model ============ -->
+  <rect x="40" y="375" width="920" height="85" rx="8" fill="#FEF2F2" stroke="#EF4444" stroke-width="2"/>
+  <text x="65" y="398" font-size="14" font-weight="bold" fill="#DC2626">4. Data Model Layer</text>
+
+  <rect x="65" y="410" width="220" height="40" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1"/>
+  <text x="175" y="428" text-anchor="middle" font-size="10" fill="#991B1B">CDS View Entity (Root)</text>
+  <text x="175" y="442" text-anchor="middle" font-size="8" fill="#64748B">define root view entity</text>
+
+  <rect x="305" y="410" width="220" height="40" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1"/>
+  <text x="415" y="428" text-anchor="middle" font-size="10" fill="#991B1B">CDS Projection View</text>
+  <text x="415" y="442" text-anchor="middle" font-size="8" fill="#64748B">define root view entity (projection)</text>
+
+  <rect x="545" y="410" width="220" height="40" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1"/>
+  <text x="655" y="428" text-anchor="middle" font-size="10" fill="#991B1B">Metadata Extension</text>
+  <text x="655" y="442" text-anchor="middle" font-size="8" fill="#64748B">@MetadataExtension: true</text>
+
+  <rect x="785" y="410" width="140" height="40" rx="4" fill="#FEE2E2" stroke="#EF4444" stroke-width="1"/>
+  <text x="855" y="428" text-anchor="middle" font-size="10" fill="#991B1B">RAP BO</text>
+  <text x="855" y="442" text-anchor="middle" font-size="8" fill="#64748B">Business Object</text>
+
+  <line x1="65" y1="460" x2="65" y2="490" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ============ LAYER 5: Database ============ -->
+  <rect x="40" y="495" width="920" height="55" rx="8" fill="#EDE9FE" stroke="#A855F7" stroke-width="2"/>
+  <text x="65" y="518" font-size="14" font-weight="bold" fill="#9333EA">5. Database Layer</text>
+  <text x="65" y="538" font-size="10" fill="#1e293b">SAP HANA · DDIC Tables · Table Functions · AMDP · ABAP SQL via Open SQL</text>
+
+  <line x1="65" y1="550" x2="65" y2="580" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ============ FULL REQUEST FLOW ============ -->
+  <rect x="40" y="585" width="920" height="200" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="500" y="610" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">RAP Request Flow — End to End</text>
+  <line x1="60" y1="618" x2="940" y2="618" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="80" y="642" font-size="10" font-weight="bold" fill="#64748B">Step</text>
+  <text x="200" y="642" font-size="10" font-weight="bold" fill="#64748B">Component</text>
+  <text x="450" y="642" font-size="10" font-weight="bold" fill="#64748B">What Happens</text>
+  <line x1="80" y1="648" x2="900" y2="648" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="80" y="668" font-size="10" font-weight="bold" fill="#22C55E">1</text>
+  <text x="200" y="668" font-size="10" fill="#1e293b">Fiori / UI5</text>
+  <text x="450" y="668" font-size="10" fill="#1e293b">User triggers a request (list report, object page, action)</text>
+
+  <text x="80" y="688" font-size="10" font-weight="bold" fill="#22C55E">2</text>
+  <text x="200" y="688" font-size="10" fill="#1e293b">Service Binding</text>
+  <text x="450" y="688" font-size="10" fill="#1e293b">OData V4 URL → maps to Service Definition entities</text>
+
+  <text x="80" y="708" font-size="10" font-weight="bold" fill="#EAB308">3</text>
+  <text x="200" y="708" font-size="10" fill="#1e293b">Behavior Definition</text>
+  <text x="450" y="708" font-size="10" fill="#1e293b">EML → routes to create/update/delete or query implementation</text>
+
+  <text x="80" y="728" font-size="10" font-weight="bold" fill="#EAB308">4</text>
+  <text x="200" y="728" font-size="10" fill="#1e293b">Behavior Implementation</text>
+  <text x="450" y="728" font-size="10" fill="#1e293b">ABAP class: FOR MODIFY / FOR READ methods execute logic</text>
+
+  <text x="80" y="748" font-size="10" font-weight="bold" fill="#EF4444">5</text>
+  <text x="200" y="748" font-size="10" fill="#1e293b">CDS View Entity</text>
+  <text x="450" y="748" font-size="10" fill="#1e293b">SQL statement generated from CDS → Open SQL → HANA</text>
+
+  <text x="80" y="768" font-size="10" font-weight="bold" fill="#A855F7">6</text>
+  <text x="200" y="768" font-size="10" fill="#1e293b">SAP HANA</text>
+  <text x="450" y="768" font-size="10" fill="#1e293b">Data returned to EML → serialized to OData V4 JSON → Fiori</text>
 </svg>

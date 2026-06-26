@@ -1,54 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 500" font-family="'JetBrains Mono', 'Ubuntu', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="'Ubuntu', sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#E95420"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3B82F6"/>
     </marker>
   </defs>
 
-  <text x="350" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#E95420">VDM Layer Architecture</text>
+  <rect x="0" y="0" width="1000" height="55" fill="#E95420"/>
+  <text x="500" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#FFF">VDM (Virtual Data Model) Layer Architecture</text>
 
-  <!-- Layer 4: Consumption -->
-  <rect x="150" y="50" width="400" height="70" rx="8" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
-  <text x="350" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#16A34A">Consumption View</text>
-  <text x="350" y="95" text-anchor="middle" font-size="10" fill="#166534">Fiori UI / OData service exposure</text>
-  <text x="350" y="110" text-anchor="middle" font-size="9" fill="#64748b">UI annotations, @Search, @Consumption.*</text>
+  <!-- LAYER 4: Consumption -->
+  <rect x="50" y="75" width="900" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+  <text x="75" y="98" font-size="14" font-weight="bold" fill="#16A34A">Consumption View (Layer 4)</text>
+  <text x="75" y="115" font-size="10" fill="#1e293b">C_* or R_* prefix · Fiori UI / OData · @UI.* / @Search / @Consumption.* annotations</text>
 
-  <line x1="350" y1="120" x2="350" y2="145" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Arrow -->
+  <line x1="500" y1="125" x2="500" y2="150" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="520" y="142" font-size="8" fill="#64748B">consumes</text>
 
-  <!-- Layer 3: Composite -->
-  <rect x="150" y="150" width="400" height="70" rx="8" fill="#FEFCE8" stroke="#EAB308" stroke-width="2"/>
-  <text x="350" y="175" text-anchor="middle" font-size="13" font-weight="bold" fill="#CA8A04">Composite View</text>
-  <text x="350" y="195" text-anchor="middle" font-size="10" fill="#854D0E">Business logic, joins, calculations</text>
-  <text x="350" y="210" text-anchor="middle" font-size="9" fill="#64748b">Associations, aggregations, currency conversion</text>
+  <!-- LAYER 3: Composite -->
+  <rect x="50" y="155" width="900" height="65" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="2"/>
+  <text x="75" y="178" font-size="14" font-weight="bold" fill="#CA8A04">Composite View (Layer 3)</text>
+  <text x="75" y="195" font-size="10" fill="#1e293b">C_* prefix · Joins multiple Basic views · Business logic, aggregations, currency conversion</text>
+  <text x="75" y="210" font-size="9" fill="#64748B">Example: C_Travel_Agency — joins Travel + Agency + Booking</text>
 
-  <line x1="350" y1="220" x2="350" y2="245" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="220" x2="500" y2="245" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Layer 2: Basic -->
-  <rect x="150" y="250" width="400" height="70" rx="8" fill="#FEF2F2" stroke="#EF4444" stroke-width="2"/>
-  <text x="350" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#DC2626">Basic / Interface View</text>
-  <text x="350" y="295" text-anchor="middle" font-size="10" fill="#991B1B">Reusable data foundation</text>
-  <text x="350" y="310" text-anchor="middle" font-size="9" fill="#64748b">Field selection, alias, simple filter logic</text>
+  <!-- LAYER 2: Basic / Interface -->
+  <rect x="50" y="250" width="900" height="65" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="2"/>
+  <text x="75" y="273" font-size="14" font-weight="bold" fill="#DC2626">Basic / Interface View (Layer 2)</text>
+  <text x="75" y="290" font-size="10" fill="#1e293b">I_* prefix · Reusable data foundation · Field selection, aliases, simple filters</text>
+  <text x="75" y="305" font-size="9" fill="#64748B">Example: I_Travel / I_Booking — clean projection of DDIC tables</text>
 
-  <line x1="350" y1="320" x2="350" y2="345" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="315" x2="500" y2="340" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Layer 1: Private -->
-  <rect x="150" y="350" width="400" height="70" rx="8" fill="#EDE9FE" stroke="#A855F7" stroke-width="2"/>
-  <text x="350" y="375" text-anchor="middle" font-size="13" font-weight="bold" fill="#9333EA">Private View</text>
-  <text x="350" y="395" text-anchor="middle" font-size="10" fill="#581C87">Internal abstraction, hidden from consumers</text>
-  <text x="350" y="410" text-anchor="middle" font-size="9" fill="#64748b">Complex joins, technical mapping, no annotations</text>
+  <!-- LAYER 1: Private -->
+  <rect x="50" y="345" width="900" height="65" rx="6" fill="#EDE9FE" stroke="#A855F7" stroke-width="2"/>
+  <text x="75" y="368" font-size="14" font-weight="bold" fill="#9333EA">Private View (Layer 1)</text>
+  <text x="75" y="385" font-size="10" fill="#1e293b">P_* prefix or no prefix · Internal abstraction · Complex joins, data enrichment, no UI annotations</text>
+  <text x="75" y="400" font-size="9" fill="#64748B">Example: P_Travel_Aggregate — aggregation logic hidden from consumers</text>
 
-  <!-- DB Source arrows -->
-  <line x1="150" y1="385" x2="80" y2="385" stroke="#94A3B8" stroke-width="1" marker-end="url(#arrow)"/>
-  <text x="115" y="378" text-anchor="middle" font-size="8" fill="#64748b">SELECT</text>
-  <text x="115" y="395" text-anchor="middle" font-size="8" fill="#64748b">from</text>
+  <line x1="500" y1="410" x2="500" y2="435" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <rect x="20" y="360" width="60" height="50" rx="6" fill="#1E293B"/>
-  <text x="50" y="385" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFFFFF">DB</text>
-  <text x="50" y="400" text-anchor="middle" font-size="8" fill="#94A3B8">Tables</text>
+  <!-- DB Source -->
+  <rect x="300" y="440" width="400" height="40" rx="6" fill="#1E293B"/>
+  <text x="500" y="463" text-anchor="middle" font-size="12" font-weight="bold" fill="#FFF">HANA DB / DDIC Tables</text>
+  <text x="500" y="476" text-anchor="middle" font-size="8" fill="#94A3B8">/DMO/I_Travel_D / /DMO/I_Booking_D / /DMO/I_Agency / ...</text>
 
-  <!-- Side label -->
-  <text x="570" y="76" font-size="9" fill="#64748b">👤 Fiori / API</text>
-  <text x="570" y="176" font-size="9" fill="#64748b">🧩 Business Logic</text>
-  <text x="570" y="276" font-size="9" fill="#64748b">📐 Reusable</text>
-  <text x="570" y="376" font-size="9" fill="#64748b">🔒 Internal</text>
+  <!-- Right side: Naming conventions table -->
+  <rect x="50" y="500" width="900" height="235" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="500" y="523" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">VDM Naming Convention & Layer Purpose</text>
+  <line x1="70" y1="530" x2="930" y2="530" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Table header -->
+  <rect x="70" y="538" width="860" height="22" rx="4" fill="#E95420"/>
+  <text x="120" y="553" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Prefix</text>
+  <text x="250" y="553" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Layer</text>
+  <text x="400" y="553" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Purpose</text>
+  <text x="600" y="553" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Annotations</text>
+  <text x="800" y="553" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Consumed By</text>
+
+  <line x1="70" y1="560" x2="930" y2="560" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Consumption -->
+  <rect x="70" y="560" width="860" height="40" rx="0" fill="#F0FDF4"/>
+  <text x="120" y="580" text-anchor="middle" font-size="11" font-weight="bold" fill="#16A34A">C_* / R_*</text>
+  <text x="250" y="580" text-anchor="middle" font-size="10" fill="#1e293b">Consumption</text>
+  <text x="400" y="580" text-anchor="middle" font-size="10" fill="#1e293b">Fiori UI, OData exposure</text>
+  <text x="600" y="580" text-anchor="middle" font-size="10" fill="#1e293b">@UI.*, @Search, @Consumption.*</text>
+  <text x="800" y="580" text-anchor="middle" font-size="10" fill="#1e293b">Fiori App / External API</text>
+
+  <!-- Composite -->
+  <rect x="70" y="600" width="860" height="40" rx="0" fill="#FEFCE8"/>
+  <text x="120" y="620" text-anchor="middle" font-size="11" font-weight="bold" fill="#CA8A04">C_*</text>
+  <text x="250" y="620" text-anchor="middle" font-size="10" fill="#1e293b">Composite</text>
+  <text x="400" y="620" text-anchor="middle" font-size="10" fill="#1e293b">Business logic, joins, aggregations</text>
+  <text x="600" y="620" text-anchor="middle" font-size="10" fill="#1e293b">@ObjectModel.*, @Analytics.*</text>
+  <text x="800" y="620" text-anchor="middle" font-size="10" fill="#1e293b">Consumption views</text>
+
+  <!-- Basic -->
+  <rect x="70" y="640" width="860" height="40" rx="0" fill="#FEF2F2"/>
+  <text x="120" y="660" text-anchor="middle" font-size="11" font-weight="bold" fill="#DC2626">I_*</text>
+  <text x="250" y="660" text-anchor="middle" font-size="10" fill="#1e293b">Basic / Interface</text>
+  <text x="400" y="660" text-anchor="middle" font-size="10" fill="#1e293b">Reusable data foundation</text>
+  <text x="600" y="660" text-anchor="middle" font-size="10" fill="#1e293b">@AccessControl.*, @EndUserText.*</text>
+  <text x="800" y="660" text-anchor="middle" font-size="10" fill="#1e293b">Composite views</text>
+
+  <!-- Private -->
+  <rect x="70" y="680" width="860" height="40" rx="0" fill="#EDE9FE"/>
+  <rect x="70" y="680" width="860" height="40" rx="0" fill="#EDE9FE"/>
+  <text x="120" y="700" text-anchor="middle" font-size="11" font-weight="bold" fill="#9333EA">P_* / none</text>
+  <text x="250" y="700" text-anchor="middle" font-size="10" fill="#1e293b">Private</text>
+  <text x="400" y="700" text-anchor="middle" font-size="10" fill="#1e293b">Internal logic, hidden from consumers</text>
+  <text x="600" y="700" text-anchor="middle" font-size="10" fill="#1e293b">No UI annotations</text>
+  <text x="800" y="700" text-anchor="middle" font-size="10" fill="#1e293b">Basic / Composite views</text>
 </svg>

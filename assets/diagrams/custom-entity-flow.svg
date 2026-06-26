@@ -1,45 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" font-family="'JetBrains Mono', 'Ubuntu', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="'Ubuntu', sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#E95420"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3B82F6"/>
+    </marker>
+    <marker id="arr-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#A855F7"/>
     </marker>
   </defs>
 
-  <text x="350" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#E95420">Custom Entity — Data Flow</text>
+  <rect x="0" y="0" width="1000" height="55" fill="#E95420"/>
+  <text x="500" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#FFF">Custom Entity — Data Flow & Implementation</text>
 
-  <!-- API/External -->
-  <rect x="250" y="50" width="200" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
-  <text x="350" y="73" text-anchor="middle" font-size="12" font-weight="bold" fill="#16A34A">External API / BAPI</text>
-  <text x="350" y="90" text-anchor="middle" font-size="9" fill="#64748b">Web service, RFC, database</text>
+  <!-- ============ DATA FLOW ============ -->
+  <text x="500" y="80" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">End-to-End Data Flow</text>
 
-  <line x1="350" y1="100" x2="350" y2="125" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="370" y="118" font-size="8" fill="#64748b">CALL</text>
+  <!-- Step 1: External -->
+  <text x="100" y="105" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748B">1. External Request</text>
+  <rect x="40" y="115" width="130" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="105" y="135" text-anchor="middle" font-size="10" fill="#16A34A">External Source</text>
+  <text x="105" y="153" text-anchor="middle" font-size="9" fill="#64748B">BAPI / RFC / Web API</text>
 
-  <!-- ABAP Provider -->
-  <rect x="200" y="130" width="300" height="65" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
-  <text x="350" y="153" text-anchor="middle" font-size="12" font-weight="bold" fill="#CA8A04">ABAP Query Provider Class</text>
-  <text x="350" y="173" text-anchor="middle" font-size="10" fill="#854D0E">IF_RAP_QUERY_PROVIDER~select</text>
-  <text x="350" y="188" text-anchor="middle" font-size="9" fill="#64748b">Filter, sort, paging logic in ABAP</text>
+  <line x1="170" y1="140" x2="210" y2="140" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="190" y="133" text-anchor="middle" font-size="8" fill="#E95420">CALL</text>
 
-  <line x1="350" y1="195" x2="350" y2="220" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="370" y="213" font-size="8" fill="#64748b">RETURN</text>
+  <!-- Step 2: Provider Class -->
+  <text x="330" y="105" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748B">2. Provider Class</text>
+  <rect x="215" y="115" width="240" height="50" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
+  <text x="335" y="135" text-anchor="middle" font-size="10" fill="#CA8A04">ABAP Query Provider</text>
+  <text x="335" y="153" text-anchor="middle" font-size="9" fill="#64748B">IF_RAP_QUERY_PROVIDER~select</text>
 
-  <!-- Custom Entity -->
-  <rect x="210" y="225" width="280" height="50" rx="6" fill="#E0F2FE" stroke="#3B82F6" stroke-width="1.5"/>
-  <text x="350" y="248" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563EB">Custom Entity (CDS)</text>
-  <text x="350" y="265" text-anchor="middle" font-size="9" fill="#64748b">@ObjectModel.query.implementedBy</text>
+  <line x1="455" y1="140" x2="495" y2="140" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="475" y="133" text-anchor="middle" font-size="8" fill="#E95420">MAP</text>
 
-  <line x1="350" y1="275" x2="350" y2="300" stroke="#E95420" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Step 3: Custom Entity -->
+  <text x="640" y="105" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748B">3. Custom Entity</text>
+  <rect x="500" y="115" width="280" height="50" rx="6" fill="#E0F2FE" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="640" y="135" text-anchor="middle" font-size="10" fill="#2563EB">Custom Entity (CDS)</text>
+  <text x="640" y="153" text-anchor="middle" font-size="9" fill="#64748B">@ObjectModel.query.implementedBy</text>
 
-  <!-- Consumer -->
-  <rect x="210" y="305" width="280" height="50" rx="6" fill="#EDE9FE" stroke="#A855F7" stroke-width="1.5"/>
-  <text x="350" y="328" text-anchor="middle" font-size="12" font-weight="bold" fill="#9333EA">Consumer</text>
-  <text x="350" y="345" text-anchor="middle" font-size="9" fill="#64748b">OData / Fiori / ABAP read via association</text>
+  <line x1="780" y1="140" x2="820" y2="140" stroke="#E95420" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Syntax example -->
-  <rect x="30" y="380" width="640" height="85" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
-  <text x="350" y="400" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e293b">CDS Definition</text>
-  <text x="50" y="420" font-size="10" fill="#64748b">@ObjectModel.query.implementedBy: 'ABAP:ZCL_PRAC_PURCHASE_QUERY'</text>
-  <text x="50" y="435" font-size="10" fill="#64748b">define root custom entity ZPRAC_CDS_C_PurchaseOrder</text>
-  <text x="50" y="450" font-size="10" fill="#64748b">{ key PurchaseOrder: abap.char(10); CompanyCode: abap.char(4); ... }</text>
+  <!-- Step 4: Consumer -->
+  <text x="910" y="105" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748B">4. Consumer</text>
+  <rect x="825" y="115" width="150" height="50" rx="6" fill="#EDE9FE" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="900" y="135" text-anchor="middle" font-size="10" fill="#9333EA">Consumer</text>
+  <text x="900" y="153" text-anchor="middle" font-size="9" fill="#64748B">OData / Fiori / ABAP</text>
+
+  <!-- ============ CDS DEFINITION ============ -->
+  <rect x="40" y="190" width="920" height="100" rx="8" fill="#1E293B"/>
+  <text x="60" y="212" font-size="11" font-weight="bold" fill="#22C55E">Custom Entity — CDS Definition</text>
+
+  <text x="60" y="234" font-size="10" fill="#94A3B8">@ObjectModel.query.implementedBy: 'ABAP:ZCL_PRAC_PURCHASE_QUERY'</text>
+  <text x="60" y="251" font-size="10" fill="#EAB308">define root view entity ZPRAC_CDS_C_PurchaseOrder</text>
+  <text x="60" y="268" font-size="10" fill="#94A3B8">  as select from <tspan fill="#EF4444" font-weight="bold">???</tspan>   <tspan fill="#64748B">-- No FROM clause — data comes from ABAP provider</tspan></text>
+  <text x="60" y="285" font-size="10" fill="#94A3B8">{ key PurchaseOrder: abap.char(10); CompanyCode: abap.char(4); ... }</text>
+
+  <!-- ============ PROVIDER CLASS ============ -->
+  <rect x="40" y="305" width="450" height="200" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="265" y="328" text-anchor="middle" font-size="11" font-weight="bold" fill="#CA8A04">ABAP Provider Class Implementation</text>
+  <line x1="55" y1="335" x2="475" y2="335" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="60" y="355" font-size="9" fill="#64748B">CLASS ZCL_PRAC_PURCHASE_QUERY IMPLEMENTATION.</text>
+  <text x="60" y="372" font-size="9" fill="#64748B">  METHOD if_rap_query_provider~select.</text>
+  <text x="80" y="392" font-size="9" fill="#E95420">    " 1. Read parameters</text>
+  <text x="80" y="409" font-size="9" fill="#94A3B8">    DATA(lt_filter) = io_request-&gt;get_filter( ).</text>
+  <text x="80" y="426" font-size="9" fill="#E95420">    " 2. Call external source</text>
+  <text x="80" y="443" font-size="9" fill="#94A3B8">    DATA(lt_data) = call_bapi( lt_filter ).</text>
+  <text x="80" y="460" font-size="9" fill="#E95420">    " 3. Return data</text>
+  <text x="80" y="477" font-size="9" fill="#94A3B8">    io_response-&gt;set_total_number_of_records( </text>
+  <text x="100" y="494" font-size="9" fill="#94A3B8">      lines( lt_data ) ).</text>
+  <text x="80" y="505" font-size="9" fill="#94A3B8">    io_response-&gt;set_data( lt_data ).</text>
+
+  <!-- ============ KEY METHODS ============ -->
+  <rect x="510" y="305" width="450" height="200" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="735" y="328" text-anchor="middle" font-size="11" font-weight="bold" fill="#2563EB">IF_RAP_QUERY_PROVIDER Interface Methods</text>
+  <line x1="525" y1="335" x2="945" y2="335" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="530" y="358" font-size="10" font-weight="bold" fill="#1e293b">io_request methods:</text>
+  <text x="545" y="380" font-size="9" fill="#64748B">get_filter( )  → Return filter conditions</text>
+  <text x="545" y="398" font-size="9" fill="#64748B">get_paging( )  → Offset + page size</text>
+  <text x="545" y="416" font-size="9" fill="#64748B">get_sort( )    → Sort order elements</text>
+  <text x="545" y="434" font-size="9" fill="#64748B">get_requested_elements( )  → Selected fields</text>
+
+  <text x="530" y="462" font-size="10" font-weight="bold" fill="#1e293b">io_response methods:</text>
+  <text x="545" y="484" font-size="9" fill="#64748B">set_data( it_data )  → Return result table</text>
+  <text x="545" y="502" font-size="9" fill="#64748B">set_total_number_of_records( iv_count )  → Total rows</text>
+
+  <!-- ============ USE CASES ============ -->
+  <rect x="40" y="520" width="920" height="210" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="500" y="543" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">When to Use Custom Entities</text>
+  <line x1="60" y1="550" x2="940" y2="550" stroke="#E2E8F0" stroke-width="1"/>
+
+  <rect x="60" y="565" width="280" height="75" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1"/>
+  <text x="200" y="585" text-anchor="middle" font-size="11" font-weight="bold" fill="#16A34A">External Data Integration</text>
+  <text x="200" y="603" text-anchor="middle" font-size="9" fill="#1e293b">BAPI calls, Web services,</text>
+  <text x="200" y="621" text-anchor="middle" font-size="9" fill="#1e293b">RFC-enabled function modules</text>
+
+  <rect x="360" y="565" width="280" height="75" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1"/>
+  <text x="500" y="585" text-anchor="middle" font-size="11" font-weight="bold" fill="#CA8A04">Complex Business Logic</text>
+  <text x="500" y="603" text-anchor="middle" font-size="9" fill="#1e293b">Multi-step calculations,</text>
+  <text x="500" y="621" text-anchor="middle" font-size="9" fill="#1e293b">conditional aggregations</text>
+
+  <rect x="660" y="565" width="280" height="75" rx="6" fill="#EDE9FE" stroke="#A855F7" stroke-width="1"/>
+  <text x="800" y="585" text-anchor="middle" font-size="11" font-weight="bold" fill="#9333EA">Legacy System Access</text>
+  <text x="800" y="603" text-anchor="middle" font-size="9" fill="#1e293b">Read from non-HANA sources,</text>
+  <text x="800" y="621" text-anchor="middle" font-size="9" fill="#1e293b">CDS views not possible</text>
+
+  <line x1="60" y1="655" x2="940" y2="655" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="60" y="680" font-size="10" fill="#64748B">⚠ Custom entities have <tspan font-weight="bold" fill="#EF4444">no SELECT</tspan> from a database table — the FROM clause is absent.</text>
+  <text x="60" y="700" font-size="10" fill="#64748B">⚠ All data is provided by the ABAP query provider class — you must implement filter/sort/paging yourself.</text>
+  <text x="60" y="720" font-size="10" fill="#64748B">⚠ Association to custom entities is possible but the target cannot use path expressions (no automatic JOIN).</text>
 </svg>

@@ -371,3 +371,172 @@ html.dark .docs-diagram {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+/* ========== Study Plan Timeline ========== */
+.timeline-hbar {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+.timeline-segment {
+  flex: 1;
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.4;
+  position: relative;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.timeline-segment .week-label {
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.timeline-segment .phase-label {
+  font-size: 9px;
+  opacity: 0.85;
+}
+.timeline-segment .phase-hours {
+  font-size: 9px;
+  font-weight: 600;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+.timeline-segment.w1 { background: #dbeafe; color: #1e40af; }
+.timeline-segment.w2 { background: #e0e7ff; color: #4338ca; }
+.timeline-segment.w3 { background: #ede9fe; color: #6d28d9; }
+.timeline-segment.w4 { background: #fce7f3; color: #be185d; }
+.timeline-segment.w5 { background: #fff3ed; color: #c2410c; }
+.timeline-segment.w6 { background: #d1fae5; color: #047857; }
+html.dark .timeline-segment.w1 { background: #1e3a5f; color: #93c5fd; }
+html.dark .timeline-segment.w2 { background: #2e1f6e; color: #a5b4fc; }
+html.dark .timeline-segment.w3 { background: #3b1f6e; color: #c4b5fd; }
+html.dark .timeline-segment.w4 { background: #5b1f3e; color: #f9a8d4; }
+html.dark .timeline-segment.w5 { background: #5b2a1f; color: #fdba74; }
+html.dark .timeline-segment.w6 { background: #1f4a3a; color: #6ee7b7; }
+
+.study-week-card {
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  background: var(--bg-secondary);
+  transition: box-shadow 0.2s;
+}
+html.dark .study-week-card {
+  background: #1a1d23;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.study-week-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+html.dark .study-week-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.study-week-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.study-week-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: #fff;
+}
+.study-week-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.study-week-hours {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: auto;
+}
+.study-week-phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+.study-week-phases span {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(233,84,32,0.08);
+  color: var(--brand-default);
+  font-weight: 500;
+}
+html.dark .study-week-phases span {
+  background: rgba(233,84,32,0.15);
+}
+.study-week-goal {
+  font-size: 12px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  background: rgba(233,84,32,0.04);
+  border-left: 3px solid var(--brand-default);
+}
+html.dark .study-week-goal {
+  background: rgba(233,84,32,0.08);
+}
+.study-week-artifacts {
+  font-size: 11px;
+  margin-top: 6px;
+  opacity: 0.7;
+}
+.study-week-artifacts a {
+  color: var(--brand-default);
+  text-decoration: none;
+}
+.study-week-artifacts a:hover {
+  text-decoration: underline;
+}
+.study-milestone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  padding: 6px 10px;
+  margin-top: 4px;
+  border-radius: 6px;
+  background: rgba(233,84,32,0.04);
+}
+html.dark .study-milestone {
+  background: rgba(233,84,32,0.08);
+}
+.study-milestone .icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ========== Highlight.js ABAP Overrides ========== */
+.hljs-doctag { color: #e8792b !important; font-weight: 500; }
+.hljs-keyword { color: #7c3aed !important; font-weight: 500; }
+.hljs-built_in { color: #0891b2 !important; }
+.hljs-string { color: #16a34a !important; }
+.hljs-number { color: #e8792b !important; }
+.hljs-comment { color: #64748b !important; font-style: italic; }
+.hljs-operator { color: #dc2626 !important; }
+html.dark .hljs-doctag { color: #fb923c !important; }
+html.dark .hljs-keyword { color: #a78bfa !important; }
+html.dark .hljs-built_in { color: #22d3ee !important; }
+html.dark .hljs-string { color: #4ade80 !important; }
+html.dark .hljs-number { color: #fb923c !important; }
+html.dark .hljs-comment { color: #94a3b8 !important; }
+html.dark .hljs-operator { color: #f87171 !important; }
+

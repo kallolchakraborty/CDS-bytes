@@ -1,54 +1,132 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="'JetBrains Mono', 'Ubuntu', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="'Ubuntu', sans-serif">
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 Z" fill="#E95420"/>
+    </marker>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#22C55E"/>
+    </marker>
+    <marker id="arr-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#EAB308"/>
     </marker>
   </defs>
 
-  <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#E95420">Association vs Composition in CDS</text>
+  <rect x="0" y="0" width="1000" height="55" fill="#E95420"/>
+  <text x="500" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#FFF">Association vs Composition in CDS</text>
 
-  <!-- Association -->
-  <rect x="40" y="50" width="350" height="320" rx="8" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
-  <text x="60" y="75" font-size="14" font-weight="bold" fill="#16A34A">Association</text>
-  <text x="60" y="100" font-size="9" fill="#64748b">define view ZV_Travel</text>
-  <text x="60" y="115" font-size="9" fill="#64748b">  as select from /dmo/travel</text>
-  <text x="60" y="130" font-size="9" fill="#64748b">  association [0..1] to /dmo/agency</text>
-  <text x="60" y="145" font-size="9" fill="#64748b">    as _Agency on $projection.AgencyId = _Agency.agency_id</text>
-  <text x="60" y="160" font-size="9" fill="#64748b">{ ... }</text>
+  <!-- ============ ASSOCIATION SIDE ============ -->
+  <rect x="25" y="70" width="465" height="350" rx="10" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+  <rect x="25" y="70" width="465" height="36" rx="10" fill="#22C55E"/>
+  <rect x="25" y="90" width="465" height="16" fill="#22C55E"/>
+  <text x="45" y="94" font-size="15" font-weight="bold" fill="#FFF">Association (read-only link)</text>
 
-  <!-- Visual: separated boxes -->
-  <rect x="80" y="185" width="260" height="50" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1"/>
-  <text x="210" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803D">Travel</text>
-  <text x="210" y="222" text-anchor="middle" font-size="9" fill="#166534">Root Entity</text>
+  <!-- CDS syntax -->
+  <rect x="40" y="118" width="435" height="95" rx="6" fill="#1E293B"/>
+  <text x="55" y="138" font-size="10" fill="#94A3B8">define view ZV_Travel</text>
+  <text x="55" y="155" font-size="10" fill="#94A3B8">  as select from /dmo/travel</text>
+  <text x="55" y="172" font-size="10" fill="#22C55E">  association [0..1] to /dmo/agency</text>
+  <text x="55" y="189" font-size="10" fill="#22C55E">    as _Agency on $projection.AgencyId = _Agency.agency_id</text>
+  <text x="55" y="206" font-size="10" fill="#94A3B8">{ key travel_id, agency_id, _Agency.name }</text>
 
-  <line x1="210" y1="240" x2="210" y2="260" stroke="#22C55E" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="180" y="255" font-size="8" fill="#22C55E">read-only link</text>
+  <!-- Visual model -->
+  <rect x="70" y="228" width="180" height="55" rx="6" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="160" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803D">Travel (Root)</text>
+  <text x="160" y="268" text-anchor="middle" font-size="9" fill="#166534">Own identity &amp; persistence</text>
 
-  <rect x="80" y="265" width="260" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1"/>
-  <text x="210" y="285" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803D">Agency</text>
-  <text x="210" y="302" text-anchor="middle" font-size="9" fill="#166534">Independent Entity</text>
+  <line x1="250" y1="255" x2="290" y2="255" stroke="#22C55E" stroke-width="2" marker-end="url(#arr-g)"/>
+  <text x="270" y="248" text-anchor="middle" font-size="8" fill="#22C55E">reads</text>
 
-  <text x="60" y="355" font-size="10" fill="#64748b">✓ Read-only navigation</text>
-  <text x="60" y="370" font-size="10" fill="#64748b">✓ Target exists independently</text>
+  <rect x="295" y="228" width="180" height="55" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="385" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803D">Agency (Target)</text>
+  <text x="385" y="268" text-anchor="middle" font-size="9" fill="#166534">Exists independently</text>
 
-  <!-- Composition -->
-  <rect x="410" y="50" width="350" height="320" rx="8" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
-  <text x="430" y="75" font-size="14" font-weight="bold" fill="#CA8A04">Composition</text>
-  <text x="430" y="100" font-size="9" fill="#64748b">define view ZV_Travel</text>
-  <text x="430" y="115" font-size="9" fill="#64748b">  as select from /dmo/travel</text>
-  <text x="430" y="130" font-size="9" fill="#64748b">  composition [0..*] of /dmo/booking</text>
-  <text x="430" y="145" font-size="9" fill="#64748b">    as _Booking on $projection.TravelId = _Booking.travel_id</text>
-  <text x="430" y="160" font-size="9" fill="#64748b">{ ... }</text>
+  <!-- Cardinality -->
+  <rect x="70" y="300" width="405" height="45" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="272" y="320" text-anchor="middle" font-size="9" fill="#64748B">Cardinality: [0..1] Zero or one · [1] Exactly one · [*] Many</text>
+  <text x="272" y="338" text-anchor="middle" font-size="9" fill="#64748B">Path expression: $projection.AssocName.field → automatic JOIN</text>
 
-  <!-- Visual: nested boxes -->
-  <rect x="450" y="185" width="290" height="130" rx="6" fill="#FEF9C3" stroke="#EAB308" stroke-width="1"/>
-  <text x="595" y="205" text-anchor="middle" font-size="11" font-weight="bold" fill="#A16207">Travel (Root)</text>
-  <text x="595" y="222" text-anchor="middle" font-size="9" fill="#854D0E">Owns children</text>
+  <!-- Properties box -->
+  <rect x="40" y="358" width="435" height="50" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1"/>
+  <text x="55" y="376" font-size="10" fill="#1e293b">✅ <tspan font-weight="bold">Read-only</tspan> — use in SELECT or path expression</text>
+  <text x="55" y="394" font-size="10" fill="#1e293b">✅ <tspan font-weight="bold">Target is independent</tspan> — can exist without the source</text>
+  <text x="55" y="400" font-size="10" fill="#1e293b">✅ Lazy-loaded — no JOIN unless path expression is used</text>
 
-  <rect x="475" y="240" width="240" height="55" rx="4" fill="#FFFBEB" stroke="#EAB308" stroke-width="1" stroke-dasharray="4"/>
-  <text x="595" y="260" text-anchor="middle" font-size="10" font-weight="bold" fill="#A16207">Booking</text>
-  <text x="595" y="277" text-anchor="middle" font-size="9" fill="#854D0E">Child Entity (dependent)</text>
+  <!-- ============ COMPOSITION SIDE ============ -->
+  <rect x="510" y="70" width="465" height="350" rx="10" fill="#FEFCE8" stroke="#EAB308" stroke-width="2"/>
+  <rect x="510" y="70" width="465" height="36" rx="10" fill="#EAB308"/>
+  <rect x="510" y="90" width="465" height="16" fill="#EAB308"/>
+  <text x="530" y="94" font-size="15" font-weight="bold" fill="#FFF">Composition (parent-child)</text>
 
-  <text x="430" y="355" font-size="10" fill="#64748b">✓ Parent-child (whole-part)</text>
-  <text x="430" y="370" font-size="10" fill="#64748b">✓ Children cannot exist without parent</text>
+  <!-- CDS syntax -->
+  <rect x="525" y="118" width="435" height="95" rx="6" fill="#1E293B"/>
+  <text x="540" y="138" font-size="10" fill="#94A3B8">define root view entity ZV_TravelRoot</text>
+  <text x="540" y="155" font-size="10" fill="#94A3B8">  as select from /dmo/travel</text>
+  <text x="540" y="172" font-size="10" fill="#EAB308">  composition [0..*] of /dmo/booking</text>
+  <text x="540" y="189" font-size="10" fill="#EAB308">    as _Booking on $projection.TravelId = _Booking.travel_id</text>
+  <text x="540" y="206" font-size="10" fill="#94A3B8">{ key travel_id, _Booking.* }</text>
+
+  <!-- Visual model -->
+  <rect x="545" y="228" width="400" height="100" rx="6" fill="#FEF9C3" stroke="#EAB308" stroke-width="1.5"/>
+  <text x="745" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#A16207">Travel (Root Entity)</text>
+  <text x="745" y="268" text-anchor="middle" font-size="9" fill="#854D0E">Owns children — cannot exist without root</text>
+
+  <rect x="565" y="280" width="360" height="38" rx="4" fill="#FFFBEB" stroke="#EAB308" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="745" y="298" text-anchor="middle" font-size="10" font-weight="bold" fill="#A16207">Booking (Child)</text>
+  <text x="745" y="314" text-anchor="middle" font-size="9" fill="#854D0E">Root UUID is part of child key</text>
+
+  <!-- Cardinality -->
+  <rect x="525" y="340" width="435" height="32" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="742" y="358" text-anchor="middle" font-size="9" fill="#64748B">Cardinality: [0..*] Zero or many · [0..1] Zero or one · [1..*] At least one</text>
+
+  <!-- Properties box -->
+  <rect x="525" y="378" width="435" height="30" rx="6" fill="#FEFCE8" stroke="#EAB308" stroke-width="1"/>
+  <text x="540" y="396" font-size="10" fill="#1e293b">✅ <tspan font-weight="bold">Parent-child</tspan> — child has dependent lifecycle</text>
+  <text x="540" y="402" font-size="10" fill="#1e293b">✅ Child <tspan font-weight="bold">cannot exist without parent</tspan> (root UUID in key)</text>
+
+  <!-- ============ COMPARISON TABLE ============ -->
+  <rect x="25" y="435" width="950" height="300" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="500" y="460" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Association vs Composition — Comparison Table</text>
+  <line x1="45" y1="468" x2="955" y2="468" stroke="#E2E8F0" stroke-width="1"/>
+
+  <rect x="45" y="475" width="910" height="24" rx="4" fill="#E95420"/>
+  <text x="120" y="492" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Aspect</text>
+  <text x="380" y="492" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Association</text>
+  <text x="650" y="492" text-anchor="middle" font-size="10" font-weight="bold" fill="#FFF">Composition</text>
+
+  <line x1="45" y1="499" x2="955" y2="499" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="120" y="522" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Relationship</text>
+  <text x="380" y="522" text-anchor="middle" font-size="10" fill="#22C55E">Read-only reference</text>
+  <text x="650" y="522" text-anchor="middle" font-size="10" fill="#EAB308">Parent-child (whole-part)</text>
+
+  <text x="120" y="547" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Target Lifecycle</text>
+  <text x="380" y="547" text-anchor="middle" font-size="10" fill="#1e293b">Independent (can exist alone)</text>
+  <text x="650" y="547" text-anchor="middle" font-size="10" fill="#1e293b">Dependent (dies with parent)</text>
+
+  <text x="120" y="572" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Cardinality</text>
+  <text x="380" y="572" text-anchor="middle" font-size="10" fill="#1e293b">[0..1], [1], [*]</text>
+  <text x="650" y="572" text-anchor="middle" font-size="10" fill="#1e293b">[0..*], [0..1], [1..*]</text>
+
+  <text x="120" y="597" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Key Inheritance</text>
+  <text x="380" y="597" text-anchor="middle" font-size="10" fill="#1e293b">No (separate keys)</text>
+  <text x="650" y="597" text-anchor="middle" font-size="10" fill="#1e293b">Root UUID in child key</text>
+
+  <text x="120" y="622" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Loading</text>
+  <text x="380" y="622" text-anchor="middle" font-size="10" fill="#1e293b">Lazy (via path expression)</text>
+  <text x="650" y="622" text-anchor="middle" font-size="10" fill="#1e293b">Eager (part of parent)</text>
+
+  <text x="120" y="647" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Use in SELECT</text>
+  <text x="380" y="647" text-anchor="middle" font-size="10" fill="#1e293b">Path expression: _Assoc.field</text>
+  <text x="650" y="647" text-anchor="middle" font-size="10" fill="#1e293b">Cannot be selected directly</text>
+
+  <text x="120" y="672" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">RAP Behavior</text>
+  <text x="380" y="672" text-anchor="middle" font-size="10" fill="#1e293b">Read-only (no create/update)</text>
+  <text x="650" y="672" text-anchor="middle" font-size="10" fill="#1e293b">Create/update/delete via parent</text>
+
+  <text x="120" y="697" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Example</text>
+  <text x="380" y="697" text-anchor="middle" font-size="10" fill="#1e293b">Travel → Agency (lookup)</text>
+  <text x="650" y="697" text-anchor="middle" font-size="10" fill="#1e293b">Travel → Booking (items)</text>
+
+  <line x1="45" y1="705" x2="955" y2="705" stroke="#E2E8F0" stroke-width="1"/>
+  <text x="500" y="722" text-anchor="middle" font-size="10" fill="#64748B">Associations = loose coupling · Compositions = tight coupling with lifecycle management</text>
 </svg>
