@@ -12,8 +12,8 @@
   --border-default: #e2e8f0;
 }
 html.dark {
-  --brand-primary: #F5A389;
-  --brand-hover: #E95420;
+  --brand-primary: #E95420;
+  --brand-hover: #C34113;
   --brand-light: rgba(233, 84, 32, 0.15);
   --brand-lighter: rgba(233, 84, 32, 0.1);
   --text-primary: #E8E8E8;
