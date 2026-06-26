@@ -18,6 +18,7 @@
  *   Travels with optional bookings — some travels have no bookings yet.
  *   A LEFT JOIN shows all travels; an INNER JOIN would HIDE unbooked travels.
  * ====================================================================
+ * DIAGRAM: assets/diagrams/join-types.svg
  */
 @AbapCatalog.sqlViewName: 'ZPRAC_SQL_LEFT_JN'
 @AbapCatalog.compiler.compareFilter: true

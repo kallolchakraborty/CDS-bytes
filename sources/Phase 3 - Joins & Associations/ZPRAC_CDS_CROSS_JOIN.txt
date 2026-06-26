@@ -23,6 +23,7 @@
  *   exist. In practice, you would filter or aggregate the result.
  *   Here we show a simple case with small datasets.
  * ====================================================================
+ * DIAGRAM: assets/diagrams/join-types.svg
  */
 @AbapCatalog.sqlViewName: 'ZPRAC_SQL_CROSS_J'
 @AbapCatalog.compiler.compareFilter: true

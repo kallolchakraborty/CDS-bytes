@@ -22,6 +22,7 @@
  *   LEFT JOIN      → ALL Travel:        Travel A + Booking A, Travel B + NULL
  *   RIGHT JOIN     → ALL Booking:       Travel A + Booking A, NULL + Booking C
  * ====================================================================
+ * DIAGRAM: assets/diagrams/join-types.svg
  */
 @AbapCatalog.sqlViewName: 'ZPRAC_SQL_RIGHT_J'
 @AbapCatalog.compiler.compareFilter: true
