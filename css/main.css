@@ -25,7 +25,7 @@ html.dark {
 }
 html { font-size: 14.4px; }
 body,
-body *:not(.material-symbols-outlined) {
+body *:not(.material-symbols-outlined):not(svg):not(svg *) {
   font-family: 'Ubuntu', sans-serif !important;
 }
 a { text-decoration: none; }
