@@ -219,6 +219,7 @@ html.dark .bg-slate-50\/50, html.dark .bg-slate-100 {
 /* ========== highlight.js compatibility ========== */
 #docs-dynamic-content pre code.hljs {
   background: #0d1117 !important;
+  color: #e6edf3 !important;
   border-radius: 10px;
 }
 html.dark #docs-dynamic-content pre code.hljs {
