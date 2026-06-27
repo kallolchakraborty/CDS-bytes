@@ -26,7 +26,7 @@ html.dark {
 html { font-size: 14.4px; }
 .max-w-8xl { max-width: 88rem !important; }
 body,
-body *:not(.material-symbols-outlined):not(svg):not(svg *) {
+body *:not(.material-symbols-outlined):not(pre):not(code):not(pre *):not(code *):not(svg):not(svg *) {
   font-family: 'Ubuntu', sans-serif !important;
 }
 a { text-decoration: none; }
@@ -206,15 +206,17 @@ html.dark .bg-slate-50\/50, html.dark .bg-slate-100 {
   padding: 1.25rem !important;
   overflow-x: auto;
   margin: 1.5rem 0;
-  font-family: 'Ubuntu', sans-serif !important;
-  font-size: 12px !important;
-  line-height: 1.6 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  tab-size: 4;
 }
 #docs-dynamic-content pre code {
   background: none !important;
   padding: 0 !important;
   color: inherit !important;
   font-size: inherit !important;
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
 /* ========== highlight.js compatibility ========== */
@@ -361,12 +363,18 @@ body * {
 .docs-diagram {
   display: block;
   max-width: 100%;
-  height: auto;
   margin: 1.5rem auto;
   border: 1px solid var(--border-default);
   border-radius: 10px;
   background: var(--bg-secondary);
   padding: 1rem;
+  overflow-x: auto;
+}
+.docs-diagram svg {
+  min-width: 900px;
+  width: 100%;
+  height: auto;
+  display: block;
 }
 html.dark .docs-diagram {
   background: #1a1d23;
