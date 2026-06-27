@@ -24,7 +24,7 @@ html.dark {
   --border-default: rgba(255, 255, 255, 0.05);
 }
 html { font-size: 14.4px; }
-.max-w-8xl { max-width: 88rem !important; }
+.max-w-8xl { max-width: 100rem !important; }
 body,
 body *:not(.material-symbols-outlined):not(pre):not(code):not(pre *):not(code *):not(svg):not(svg *) {
   font-family: 'Ubuntu', sans-serif !important;
