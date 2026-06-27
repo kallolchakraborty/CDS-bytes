@@ -640,3 +640,31 @@ html.dark .hljs-number { color: #fb923c !important; }
 html.dark .hljs-comment { color: #94a3b8 !important; }
 html.dark .hljs-operator { color: #f87171 !important; }
 
+/* ========== Responsive Left Sidebar Override ========== */
+@media (max-width: 1023px) {
+  #left-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 50 !important;
+    background: var(--bg-primary) !important;
+    border-right: 1px solid var(--border-default) !important;
+    transition: transform 0.2s ease-in-out !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  /* When it has -translate-x-full, hide it */
+  #left-sidebar.-translate-x-full {
+    transform: translateX(-100%) !important;
+  }
+  
+  /* When it doesn't have -translate-x-full, show it */
+  #left-sidebar:not(.-translate-x-full) {
+    transform: translateX(0) !important;
+  }
+}
+
