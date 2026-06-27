@@ -320,9 +320,9 @@ html.dark #docs-dynamic-content pre code.hljs {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  background: transparent !important;
 }
 .glass-nav #themeToggle, .theme-toggle-btn, .open-share-btn, #sidebar-toggle {
-  background: transparent !important;
   padding: 0 !important;
   margin: 0 !important;
   min-width: 0 !important;
