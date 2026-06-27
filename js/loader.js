@@ -90,6 +90,74 @@
       });
     }
 
+    // Format SVG elements and fix text overlapping/overflow issues
+    main.querySelectorAll('.docs-diagram svg').forEach(function(svg) {
+      svg.querySelectorAll('text').forEach(function(text) {
+        text.style.setProperty('font-family', "'Ubuntu', sans-serif", 'important');
+      });
+
+      var rects = svg.querySelectorAll('rect');
+      rects.forEach(function(rect) {
+        var rx = parseFloat(rect.getAttribute('x'));
+        var ry = parseFloat(rect.getAttribute('y'));
+        var rw = parseFloat(rect.getAttribute('width'));
+        var rh = parseFloat(rect.getAttribute('height'));
+        if (isNaN(rx) || isNaN(ry) || isNaN(rw) || isNaN(rh)) return;
+        
+        var fill = rect.getAttribute('fill') || '';
+        var isCodeRect = fill.toLowerCase() === '#1e293b';
+
+        // Find all text elements inside this rect
+        var insideTexts = [];
+        svg.querySelectorAll('text').forEach(function(text) {
+          var tx = parseFloat(text.getAttribute('x') || 0);
+          var ty = parseFloat(text.getAttribute('y') || 0);
+          if (tx >= rx && tx <= rx + rw && ty >= ry && ty <= ry + rh + 30) {
+            insideTexts.push(text);
+          }
+        });
+
+        if (insideTexts.length === 0) return;
+
+        // Sort by original y coordinate
+        insideTexts.sort(function(a, b) {
+          return parseFloat(a.getAttribute('y') || 0) - parseFloat(b.getAttribute('y') || 0);
+        });
+
+        if (isCodeRect) {
+          insideTexts.forEach(function(text) {
+            text.style.setProperty('font-family', "'JetBrains Mono', monospace", 'important');
+            text.style.setProperty('font-size', '9.5px', 'important');
+            text.querySelectorAll('tspan').forEach(function(tspan) {
+              tspan.style.setProperty('font-family', "'JetBrains Mono', monospace", 'important');
+              tspan.style.setProperty('font-size', '9.5px', 'important');
+            });
+          });
+        }
+
+        var lastTextY = parseFloat(insideTexts[insideTexts.length - 1].getAttribute('y') || 0);
+        if (lastTextY > ry + rh - 5 || isCodeRect) {
+          var paddingStart = isCodeRect ? 18 : 15;
+          var paddingEnd = 10;
+          var availableHeight = rh - paddingStart - paddingEnd;
+          var count = insideTexts.length;
+          
+          insideTexts.forEach(function(text, index) {
+            var newY;
+            if (count === 1) {
+              newY = ry + rh / 2 + 4;
+            } else {
+              newY = ry + paddingStart + index * (availableHeight / (count - 1));
+            }
+            text.setAttribute('y', newY);
+            text.querySelectorAll('tspan').forEach(function(tspan) {
+              tspan.setAttribute('y', newY);
+            });
+          });
+        }
+      });
+    });
+
     // Update right outline
     updateRightOutline(data);
     updateShareUrl(hash);

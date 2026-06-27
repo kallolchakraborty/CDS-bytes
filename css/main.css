@@ -375,6 +375,10 @@ body * {
   height: auto;
   display: block;
 }
+.docs-diagram svg text,
+.docs-diagram svg tspan {
+  font-family: 'Ubuntu', sans-serif !important;
+}
 html.dark .docs-diagram {
   background: #1a1d23;
   border-color: rgba(255, 255, 255, 0.08);
